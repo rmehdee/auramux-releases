@@ -25,6 +25,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        # A release event checks out the tag, which leaves a detached HEAD and
+        # nothing for git push to push to. The branch has to be explicit.
+        with:
+          ref: main
 
       - name: Write the reviews into the page
         env:
