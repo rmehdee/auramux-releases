@@ -868,11 +868,12 @@ footer .who {
  * measuring against the wrong box. clip prevents sideways overflow without
  * creating a scroller.
  */
-html,
-body {
-  overflow-x: clip;
-}
-
+/*
+ * No overflow on the root. Any non-visible overflow on html or body makes that
+ * element the scrollport for sticky descendants, and the header then has
+ * nothing to stick to. The sideways scroll this once guarded against was fixed
+ * where it came from: grid and flex items that refused to shrink.
+ */
 body {
   position: relative;
 }
@@ -919,7 +920,16 @@ body::after {
   );
 }
 
-.top,
+/*
+ * These sit above the ambient glow, which is painted on body::before and
+ * body::after.
+ *
+ * .top is deliberately not in this list. It already carries its own position
+ * and z-index, and including it here quietly overrode `position: sticky` with
+ * `relative`, because this rule comes later with equal specificity. The header
+ * was never sticky on this site, and everything built on top of that was
+ * working on an element that scrolls away regardless.
+ */
 main,
 footer {
   position: relative;
