@@ -119,4 +119,177 @@
     .catch(function () {
       /* the badge stays hidden */
     });
+
+  /* ---------- reviews ---------- */
+
+  /*
+   * Read and written through a function on robinmehdee.com, because GitHub
+   * Pages serves files and nothing else. Everything submitted waits for
+   * approval, so nothing here publishes itself.
+   */
+
+  var API = "https://robinmehdee.com/api/reviews";
+
+  var stars = function (n) {
+    return "\u2605".repeat(n) + "\u2606".repeat(5 - n);
+  };
+
+  var when = function (iso) {
+    var then = new Date(iso);
+    if (isNaN(then)) return "";
+    var days = Math.floor((Date.now() - then) / 86400000);
+    if (days < 1) return "today";
+    if (days === 1) return "yesterday";
+    if (days < 30) return days + " days ago";
+    return then.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  };
+
+  /* textContent throughout, never innerHTML: this is text other people wrote. */
+  var renderReviews = function (data) {
+    if (!data || !data.count || !Array.isArray(data.reviews)) return;
+
+    var summary = document.getElementById("review-summary");
+    var list = document.getElementById("review-list");
+    if (!summary || !list) return;
+
+    document.getElementById("review-stars").textContent = stars(
+      Math.round(data.average),
+    );
+    document.getElementById("review-average").textContent = data.average.toFixed(1);
+    document.getElementById("review-count").textContent =
+      "from " + data.count + (data.count === 1 ? " review" : " reviews");
+
+    list.textContent = "";
+    data.reviews.forEach(function (r) {
+      var li = document.createElement("li");
+
+      var top = document.createElement("div");
+      top.className = "r-top";
+      var st = document.createElement("span");
+      st.className = "r-stars";
+      st.textContent = stars(r.rating);
+      st.setAttribute("aria-label", r.rating + " out of 5");
+      top.appendChild(st);
+      if (r.title) {
+        var t = document.createElement("span");
+        t.className = "r-title";
+        t.textContent = r.title;
+        top.appendChild(t);
+      }
+      li.appendChild(top);
+
+      var body = document.createElement("p");
+      body.className = "r-body";
+      body.textContent = r.body;
+      li.appendChild(body);
+
+      var who = document.createElement("p");
+      who.className = "r-who";
+      who.textContent = (r.name || "Anonymous") + ", " + when(r.approvedAt || r.at);
+      li.appendChild(who);
+
+      list.appendChild(li);
+    });
+
+    summary.classList.remove("hidden");
+
+    /*
+     * Ratings go into the structured data only once they are real, and only
+     * ever the ones actually shown. There is no seeded or placeholder rating
+     * anywhere in this file.
+     */
+    var ld = document.getElementById("ld-app");
+    if (ld) {
+      try {
+        var d = JSON.parse(ld.textContent);
+        d["@graph"][0].aggregateRating = {
+          "@type": "AggregateRating",
+          ratingValue: data.average,
+          reviewCount: data.count,
+          bestRating: 5,
+          worstRating: 1,
+        };
+        d["@graph"][0].review = data.reviews.slice(0, 10).map(function (r) {
+          return {
+            "@type": "Review",
+            reviewRating: {
+              "@type": "Rating",
+              ratingValue: r.rating,
+              bestRating: 5,
+              worstRating: 1,
+            },
+            author: { "@type": "Person", name: r.name || "Anonymous" },
+            datePublished: (r.approvedAt || r.at || "").slice(0, 10),
+            name: r.title || undefined,
+            reviewBody: r.body,
+          };
+        });
+        ld.textContent = JSON.stringify(d);
+      } catch (e) {
+        /* the page is fine without it */
+      }
+    }
+  };
+
+  fetch(API)
+    .then(function (r) {
+      return r.ok ? r.json() : null;
+    })
+    .then(renderReviews)
+    .catch(function () {
+      /* the section stays hidden and the form still works */
+    });
+
+  var form = document.getElementById("review-form");
+  if (form) {
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      var note = document.getElementById("review-note");
+      var button = document.getElementById("review-submit");
+      var data = new FormData(form);
+      var say = function (text, state) {
+        note.textContent = text;
+        note.setAttribute("data-state", state);
+      };
+
+      if (!data.get("rating")) return say("Pick a rating first.", "bad");
+      if (String(data.get("body") || "").trim().length < 12) {
+        return say("A sentence or two, please.", "bad");
+      }
+
+      button.disabled = true;
+      say("Sending.", "");
+
+      fetch(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rating: Number(data.get("rating")),
+          name: data.get("name"),
+          title: data.get("title"),
+          body: data.get("body"),
+          website: data.get("website"),
+        }),
+      })
+        .then(function (r) {
+          return r.json().then(function (b) {
+            return { ok: r.ok, body: b };
+          });
+        })
+        .then(function (res) {
+          if (!res.ok) {
+            say(res.body.error || "That did not go through.", "bad");
+            button.disabled = false;
+            return;
+          }
+          form.reset();
+          say("Thank you. It will appear once I have read it.", "ok");
+        })
+        .catch(function () {
+          say("Could not reach the server. Please try again later.", "bad");
+          button.disabled = false;
+        });
+    });
+  }
 })();

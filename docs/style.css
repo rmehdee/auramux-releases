@@ -1202,3 +1202,230 @@ footer {
 .card.diff p a {
   color: var(--accent);
 }
+
+/* ==========================================================================
+   Reviews
+   ========================================================================== */
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.rating-line {
+  display: flex;
+  align-items: baseline;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+.stars-static {
+  color: var(--amber);
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+}
+.rating-num {
+  font-size: 1.5rem;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+.rating-count {
+  color: var(--faint);
+  font-size: 0.875rem;
+}
+
+.reviews {
+  list-style: none;
+  margin: 1.5rem 0 2.5rem;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+@media (min-width: 720px) {
+  .reviews {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.reviews li {
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  border-radius: 10px;
+  padding: 1.15rem 1.25rem;
+}
+.reviews .r-top {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.reviews .r-stars {
+  color: var(--amber);
+  font-size: 0.9rem;
+  letter-spacing: 0.06em;
+}
+.reviews .r-title {
+  color: var(--bright);
+  font-size: 0.9375rem;
+}
+.reviews .r-body {
+  margin: 0.6rem 0 0;
+  color: var(--dim);
+  font-size: 0.9375rem;
+  /* A review is somebody else's words. Wrap them, never let one long token
+     stretch the card. */
+  overflow-wrap: anywhere;
+}
+.reviews .r-who {
+  margin: 0.75rem 0 0;
+  color: var(--faint);
+  font-size: 0.8125rem;
+}
+
+/* ---------- the form ---------- */
+
+.review-form {
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 55%, transparent);
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 46rem;
+}
+.review-form h3 {
+  font-size: 1.05rem;
+  color: var(--bright);
+}
+.review-form .small {
+  margin: 0.5rem 0 0;
+  color: var(--faint);
+  font-size: 0.8125rem;
+  max-width: 60ch;
+}
+.review-form .quiet-note {
+  margin-top: 1.25rem;
+  border-top: 1px solid var(--line-soft);
+  padding-top: 0.9rem;
+}
+
+.stars-input {
+  border: 0;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  align-items: center;
+}
+.stars-input legend {
+  /* The legend has to stay for screen readers, but the stars label themselves
+     visually, so it does not need to take a row. */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.stars-input input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.stars-input label {
+  cursor: pointer;
+  font-size: 1.85rem;
+  line-height: 1;
+  padding: 0 0.1rem;
+  color: var(--line);
+  transition: color 0.12s ease;
+}
+/* Reversed order means "checked" and everything after it in the DOM is
+   everything at or below that rating on screen. */
+.stars-input input:checked,
+.stars-input input:checked ~ label,
+.stars-input label:hover,
+.stars-input label:hover ~ label {
+  color: var(--amber);
+}
+.stars-input input:focus-visible + label {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.fields {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1.25rem;
+}
+@media (min-width: 560px) {
+  .fields {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.field {
+  display: block;
+  margin-top: 1rem;
+}
+.fields .field {
+  margin-top: 0;
+}
+.field > span {
+  display: block;
+  font-size: 0.8125rem;
+  color: var(--dim);
+  margin-bottom: 0.35rem;
+}
+.field em {
+  font-style: normal;
+  color: var(--faint);
+}
+.field input,
+.field textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  color: var(--fg);
+  font: inherit;
+  font-size: 0.9375rem;
+  resize: vertical;
+}
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Off-screen rather than display:none, because some bots skip hidden fields
+   but fill in ones they can compute a value for. */
+.trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.form-foot {
+  margin-top: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.form-foot .copy {
+  height: 2.4rem;
+}
+#review-note {
+  margin: 0;
+}
+#review-note[data-state="ok"] {
+  color: var(--accent);
+}
+#review-note[data-state="bad"] {
+  color: var(--amber);
+}
