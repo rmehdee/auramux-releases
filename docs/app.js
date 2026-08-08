@@ -223,21 +223,33 @@
         button.setAttribute("data-id", stop[0]);
         button.setAttribute("aria-pressed", "false");
 
-        button.addEventListener("mouseenter", function () { show(stop[0]); });
-        button.addEventListener("mouseleave", function () { show(null); });
-        button.addEventListener("focus", function () { show(stop[0]); });
-        button.addEventListener("blur", function () { show(null); });
         /*
-         * On a touch screen there is no hover to leave, so tapping has to
-         * toggle. With a mouse, hover has already set this one active by the
-         * time the click lands, and toggling would immediately undo it, which
-         * looks like a broken button.
+         * Pointer events with an explicit mouse check, not mouseenter.
+         *
+         * A tap on iOS sends mouseover and mouseenter before it sends click.
+         * With a toggle on click, the sequence was: hover turns the ring on,
+         * click turns it straight back off. Every tap did nothing, which is
+         * exactly what this looked like on a phone.
+         *
+         * Filtering on pointerType means a finger never reaches the hover
+         * path, and click simply shows the region rather than toggling, so the
+         * behaviour is the same however it was triggered.
          */
-        button.addEventListener("click", function () {
-          var hoverable =
-            window.matchMedia && window.matchMedia("(hover: hover)").matches;
-          show(!hoverable && active === stop[0] ? null : stop[0]);
+        button.addEventListener("pointerenter", function (event) {
+          if (event.pointerType === "mouse") show(stop[0]);
         });
+        button.addEventListener("pointerleave", function (event) {
+          if (event.pointerType === "mouse") show(null);
+        });
+        button.addEventListener("focus", function () { show(stop[0]); });
+        button.addEventListener("blur", function (event) {
+          // A tap focuses the button; hiding on blur would undo the tap when
+          // the next one is pressed. Only clear when moving on by keyboard.
+          if (event.relatedTarget || document.activeElement === document.body) {
+            show(null);
+          }
+        });
+        button.addEventListener("click", function () { show(stop[0]); });
 
         li.appendChild(button);
         stopList.appendChild(li);

@@ -1490,3 +1490,8 @@ footer {
     display: none;
   }
 }
+
+/* No 300ms wait between tapping a label and the highlight appearing. */
+.tour-legend button {
+  touch-action: manipulation;
+}
