@@ -265,4 +265,58 @@
       document.fonts.ready.then(build).catch(function () {});
     }
   }
+
+  /* ---------- header that gets out of the way, and back to top ---------- */
+
+  var header = document.querySelector(".top");
+  var toTop = document.getElementById("to-top");
+
+  if (header || toTop) {
+    var lastY = window.scrollY;
+    var ticking = false;
+
+    /*
+     * One scroll listener for both, read inside requestAnimationFrame. Reading
+     * scrollY in the handler itself is what turns a scroll into a stutter,
+     * because every read forces the browser to settle layout first.
+     */
+    var onScroll = function () {
+      if (ticking) return;
+      ticking = true;
+
+      window.requestAnimationFrame(function () {
+        var y = window.scrollY;
+
+        if (header) {
+          // Near the top it always shows, so the page never opens headerless.
+          // The 6px threshold ignores the jitter of a trackpad settling, which
+          // would otherwise flicker the header on and off.
+          if (y < 80) {
+            header.classList.remove("tucked");
+          } else if (Math.abs(y - lastY) > 6) {
+            header.classList.toggle("tucked", y > lastY);
+          }
+        }
+
+        if (toTop) toTop.classList.toggle("shown", y > 900);
+
+        lastY = y;
+        ticking = false;
+      });
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+
+    if (toTop) {
+      toTop.addEventListener("click", function () {
+        var reduce =
+          window.matchMedia &&
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+        // The header would otherwise stay tucked until the next scroll up.
+        if (header) header.classList.remove("tucked");
+      });
+    }
+  }
 })();

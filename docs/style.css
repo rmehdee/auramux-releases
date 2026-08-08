@@ -861,9 +861,20 @@ footer .who {
    where it moves at all.
    ========================================================================== */
 
+/*
+ * clip, not hidden. `overflow-x: hidden` on body computes overflow-y to auto,
+ * which turns body into its own scroll container: window.scrollTo stops
+ * working, scrollIntoView misbehaves, and position: sticky and fixed start
+ * measuring against the wrong box. clip prevents sideways overflow without
+ * creating a scroller.
+ */
+html,
+body {
+  overflow-x: clip;
+}
+
 body {
   position: relative;
-  overflow-x: hidden;
 }
 
 /* A single soft light source behind the hero, tinted with the app's green.
@@ -1492,4 +1503,65 @@ footer {
 /* No 300ms wait between tapping a label and the highlight appearing. */
 .tour-legend button {
   touch-action: manipulation;
+}
+
+/* ---------- header that gets out of the way ---------- */
+
+.top {
+  transition: transform 0.25s ease;
+  will-change: transform;
+}
+/*
+ * Tucked away while reading down the page, back the moment you scroll up. The
+ * page is long and the header earns its space only when you want it.
+ */
+.top.tucked {
+  transform: translateY(-100%);
+}
+
+/* ---------- back to top ---------- */
+
+.to-top {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.5rem;
+  z-index: 30;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(8px);
+  color: var(--dim);
+  cursor: pointer;
+  box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.8);
+  /* Kept mounted and faded rather than added and removed, so it never reflows
+     the page as it appears. */
+  opacity: 0;
+  transform: translateY(0.5rem);
+  pointer-events: none;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+  touch-action: manipulation;
+}
+.to-top.shown {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.to-top:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+@media (min-width: 640px) {
+  .to-top {
+    right: 2rem;
+    bottom: 2rem;
+  }
 }
