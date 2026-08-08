@@ -156,6 +156,7 @@
 
     var show = function (id) {
       active = id;
+      var scroller = host.parentElement;
       var target = id && host.querySelector('[data-tour="' + id + '"]');
       var stop = STOPS.filter(function (s) { return s[0] === id; })[0];
 
@@ -176,6 +177,27 @@
         strong.textContent = stop[1] + ". ";
         caption.appendChild(strong);
         caption.appendChild(document.createTextNode(stop[2]));
+
+        /*
+         * On a narrow screen the window is wider than the viewport and scrolls
+         * sideways, so the region being pointed at is often off-screen. The
+         * ring was drawn correctly and nobody could see it, which reads as a
+         * label that does nothing. Bring it into view.
+         */
+        if (scroller && scroller.scrollWidth > scroller.clientWidth) {
+          var sRect = scroller.getBoundingClientRect();
+          var wanted =
+            r.left + r.width / 2 - (sRect.left + sRect.width / 2);
+          if (Math.abs(wanted) > 8) {
+            var reduce =
+              window.matchMedia &&
+              window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+            scroller.scrollBy({
+              left: wanted,
+              behavior: reduce ? "auto" : "smooth",
+            });
+          }
+        }
       }
 
       Array.prototype.forEach.call(stopList.children, function (li) {
@@ -225,11 +247,6 @@
 
     build();
     window.addEventListener("resize", build);
-    // A sideways scroll moves the mockup under a ring that is already placed.
-    var scroller = host.parentElement;
-    if (scroller) scroller.addEventListener("scroll", function () {
-      if (active) show(active);
-    });
     // Fonts land after first paint and shift everything underneath.
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(build).catch(function () {});

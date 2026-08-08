@@ -1388,12 +1388,7 @@ footer {
   border-radius: 6px;
   background: rgba(62, 207, 142, 0.1);
   box-shadow: 0 0 0 2px rgba(62, 207, 142, 0.8);
-  transition:
-    opacity 0.15s ease,
-    left 0.15s ease,
-    top 0.15s ease,
-    width 0.15s ease,
-    height 0.15s ease;
+  transition: opacity 0.15s ease;
 }
 
 .tour-legend {
