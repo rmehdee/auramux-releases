@@ -1284,148 +1284,78 @@ footer {
   font-size: 0.8125rem;
 }
 
-/* ---------- the form ---------- */
+/* ---------- the call to action ---------- */
 
-.review-form {
+.review-cta {
   border: 1px solid var(--line);
   background: color-mix(in srgb, var(--surface) 55%, transparent);
   border-radius: 12px;
   padding: 1.5rem;
   max-width: 46rem;
 }
-.review-form h3 {
+.review-cta h3 {
   font-size: 1.05rem;
   color: var(--bright);
 }
-.review-form .small {
-  margin: 0.5rem 0 0;
-  color: var(--faint);
-  font-size: 0.8125rem;
-  max-width: 60ch;
-}
-.review-form .quiet-note {
-  margin-top: 1.25rem;
-  border-top: 1px solid var(--line-soft);
-  padding-top: 0.9rem;
-}
-
-.stars-input {
-  border: 0;
-  margin: 1.25rem 0 0;
-  padding: 0;
-  display: flex;
-  flex-direction: row-reverse;
-  justify-content: flex-end;
-  align-items: center;
-}
-.stars-input legend {
-  /* The legend has to stay for screen readers, but the stars label themselves
-     visually, so it does not need to take a row. */
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-}
-.stars-input input {
-  position: absolute;
-  opacity: 0;
-  width: 1px;
-  height: 1px;
-}
-.stars-input label {
-  cursor: pointer;
-  font-size: 1.85rem;
-  line-height: 1;
-  padding: 0 0.1rem;
-  color: var(--line);
-  transition: color 0.12s ease;
-}
-/* Reversed order means "checked" and everything after it in the DOM is
-   everything at or below that rating on screen. */
-.stars-input input:checked,
-.stars-input input:checked ~ label,
-.stars-input label:hover,
-.stars-input label:hover ~ label {
-  color: var(--amber);
-}
-.stars-input input:focus-visible + label {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-.fields {
-  display: grid;
-  gap: 0.9rem;
-  margin-top: 1.25rem;
-}
-@media (min-width: 560px) {
-  .fields {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-.field {
-  display: block;
-  margin-top: 1rem;
-}
-.fields .field {
-  margin-top: 0;
-}
-.field > span {
-  display: block;
-  font-size: 0.8125rem;
+.review-cta p {
+  margin: 0.6rem 0 0;
   color: var(--dim);
-  margin-bottom: 0.35rem;
+  font-size: 0.9375rem;
+  max-width: 62ch;
 }
-.field em {
-  font-style: normal;
+.review-cta p.small {
   color: var(--faint);
+  font-size: 0.8125rem;
 }
-.field input,
-.field textarea {
-  width: 100%;
-  background: var(--bg);
+.review-actions {
+  margin-top: 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #0d1512;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.55rem 1rem;
+}
+.btn-primary:hover {
+  background: #4ee09c;
+  text-decoration: none;
+}
+.btn-quiet {
+  display: inline-flex;
+  align-items: center;
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 0.6rem 0.75rem;
+  color: var(--dim);
+  font-size: 0.875rem;
+  padding: 0.55rem 1rem;
+}
+.btn-quiet:hover {
+  border-color: var(--faint);
   color: var(--fg);
-  font: inherit;
-  font-size: 0.9375rem;
-  resize: vertical;
-}
-.field input:focus,
-.field textarea:focus {
-  outline: none;
-  border-color: var(--accent);
+  text-decoration: none;
 }
 
-/* Off-screen rather than display:none, because some bots skip hidden fields
-   but fill in ones they can compute a value for. */
-.trap {
-  position: absolute;
-  left: -9999px;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-}
-
-.form-foot {
-  margin-top: 1.25rem;
+/* The avatar beside a reviewer's name. */
+.reviews .r-who {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.45rem;
   flex-wrap: wrap;
 }
-.form-foot .copy {
-  height: 2.4rem;
+.reviews .r-who img {
+  border-radius: 999px;
+  border: 1px solid var(--line);
 }
-#review-note {
-  margin: 0;
+.reviews .r-who a {
+  color: var(--dim);
 }
-#review-note[data-state="ok"] {
-  color: var(--accent);
-}
-#review-note[data-state="bad"] {
-  color: var(--amber);
+.reviews .r-who a:hover {
+  color: var(--fg);
 }

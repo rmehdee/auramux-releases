@@ -185,6 +185,9 @@
   ]
 }
     </script>
+    <!-- reviews-schema:start -->
+
+<!-- reviews-schema:end -->
   </head>
 
   <body>
@@ -868,75 +871,43 @@
         <div class="wrap">
           <p class="eyebrow" data-n="09">Reviews</p>
 
-          <!-- Hidden until there is something real to show. An empty rating
-               widget reads worse than no widget at all. -->
-          <div id="review-summary" class="hidden">
-            <div class="rating-line">
-              <span class="stars-static" id="review-stars" aria-hidden="true"></span>
-              <span class="rating-num" id="review-average"></span>
-              <span class="rating-count" id="review-count"></span>
-            </div>
-            <ul class="reviews" id="review-list"></ul>
-          </div>
+          <!-- Everything between these markers is generated from GitHub
+               Discussions by .github/workflows/sync-reviews.yml. Edit the
+               script, not this. Empty until somebody writes one. -->
+          <!-- reviews:start -->
+<!-- reviews:end -->
 
-          <form class="review-form" id="review-form" novalidate>
+          <div class="review-cta">
             <h3>Used it? Say what you think.</h3>
+            <p>
+              Reviews live in GitHub Discussions, so they are written under real
+              accounts and you can read every one in full, including anything I
+              would rather you did not. Posting takes a GitHub login and about a
+              minute.
+            </p>
             <p class="small">
-              Reviews are read before they appear, so yours will not show up
-              straight away. Please be honest, including about what is missing.
+              Please be honest, including about what is missing or annoying.
               That is more useful to me than praise.
             </p>
-
-            <fieldset class="stars-input">
-              <legend>Your rating</legend>
-              <!-- Reversed in the DOM so the CSS sibling selector can light up
-                   every star below the one under the cursor. -->
-              <input type="radio" id="star5" name="rating" value="5" required />
-              <label for="star5" title="Five stars"><span class="sr">Five stars</span>★</label>
-              <input type="radio" id="star4" name="rating" value="4" />
-              <label for="star4" title="Four stars"><span class="sr">Four stars</span>★</label>
-              <input type="radio" id="star3" name="rating" value="3" />
-              <label for="star3" title="Three stars"><span class="sr">Three stars</span>★</label>
-              <input type="radio" id="star2" name="rating" value="2" />
-              <label for="star2" title="Two stars"><span class="sr">Two stars</span>★</label>
-              <input type="radio" id="star1" name="rating" value="1" />
-              <label for="star1" title="One star"><span class="sr">One star</span>★</label>
-            </fieldset>
-
-            <div class="fields">
-              <label class="field">
-                <span>Your name <em>optional</em></span>
-                <input type="text" name="name" maxlength="40" autocomplete="off" />
-              </label>
-              <label class="field">
-                <span>Headline <em>optional</em></span>
-                <input type="text" name="title" maxlength="90" autocomplete="off" />
-              </label>
+            <div class="review-actions">
+              <a
+                class="btn-primary"
+                href="https://github.com/rmehdee/auramux-releases/discussions/new?category=reviews"
+                target="_blank"
+                rel="noopener"
+              >
+                Write a review
+              </a>
+              <a
+                class="btn-quiet"
+                href="https://github.com/rmehdee/auramux-releases/discussions/categories/reviews"
+                target="_blank"
+                rel="noopener"
+              >
+                Read them all
+              </a>
             </div>
-
-            <label class="field">
-              <span>What you think</span>
-              <textarea name="body" rows="4" maxlength="700" required></textarea>
-            </label>
-
-            <!-- Not visible to anyone using the page. Anything that fills this
-                 in is not a person. -->
-            <div class="trap" aria-hidden="true">
-              <label>Website<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
-            </div>
-
-            <div class="form-foot">
-              <button type="submit" class="copy primary" id="review-submit">
-                Send it
-              </button>
-              <p class="small" id="review-note" role="status"></p>
-            </div>
-
-            <p class="small quiet-note">
-              No account, no email address, nothing stored about you. Your name
-              is optional and free text.
-            </p>
-          </form>
+          </div>
         </div>
       </section>
       <!-- ---------------------------------------------------------------- -->

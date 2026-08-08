@@ -1,0 +1,57 @@
+# The filename has to match the category slug, "reviews", or GitHub will not
+# apply this form. It exists so a rating is a field rather than something a
+# script has to guess at from prose.
+title: "[Review] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time. Reviews posted here appear on
+        [auramux.com](https://auramux.com) within a few minutes, under your
+        GitHub name and avatar.
+
+        Please be honest, including about what is missing or annoying. That is
+        more useful to me than praise.
+
+  - type: dropdown
+    id: rating
+    attributes:
+      label: Rating
+      description: Out of five.
+      options:
+        - "5 - Excellent"
+        - "4 - Good"
+        - "3 - Mixed"
+        - "2 - Poor"
+        - "1 - Bad"
+    validations:
+      required: true
+
+  - type: input
+    id: headline
+    attributes:
+      label: Headline
+      description: One line, if you have one.
+      placeholder: What you would tell a colleague in a sentence
+    validations:
+      required: false
+
+  - type: textarea
+    id: review
+    attributes:
+      label: What you think
+      description: How you use it, what works, what does not.
+      placeholder: |
+        I run several Claude Code sessions at once and...
+    validations:
+      required: true
+
+  - type: input
+    id: setup
+    attributes:
+      label: Your setup
+      description: Optional. Helps me reproduce anything you mention.
+      placeholder: M2 Pro, macOS 15.2, zsh
+    validations:
+      required: false

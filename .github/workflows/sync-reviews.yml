@@ -1,0 +1,44 @@
+# Reviews are GitHub Discussions in the Reviews category. This puts them on the
+# page, in the HTML itself rather than fetched by script, so search engines and
+# answer engines can read the ratings.
+name: Sync reviews
+
+on:
+  discussion:
+    types: [created, edited, deleted, category_changed, transferred]
+  # Nothing fires an event when a spam account is deleted or a post is hidden,
+  # so the page is reconciled once a day regardless.
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  discussions: read
+
+concurrency:
+  group: sync-reviews
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write the reviews into the page
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node .github/scripts/sync-reviews.mjs
+
+      - name: Commit, but only if something changed
+        run: |
+          if git diff --quiet; then
+            echo "The page already matches the discussions."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/index.html
+          git commit -m "chore: sync reviews from discussions"
+          git push
