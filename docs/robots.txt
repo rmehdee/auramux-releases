@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
 
+# Structured notes for language models and answer engines.
+# https://auramux.com/llms.txt
+
 Sitemap: https://auramux.com/sitemap.xml
