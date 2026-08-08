@@ -1505,20 +1505,6 @@ footer {
   touch-action: manipulation;
 }
 
-/* ---------- header that gets out of the way ---------- */
-
-.top {
-  transition: transform 0.25s ease;
-  will-change: transform;
-}
-/*
- * Tucked away while reading down the page, back the moment you scroll up. The
- * page is long and the header earns its space only when you want it.
- */
-.top.tucked {
-  transform: translateY(-100%);
-}
-
 /* ---------- back to top ---------- */
 
 .to-top {

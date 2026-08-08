@@ -266,52 +266,23 @@
     }
   }
 
-  /* ---------- header that gets out of the way, and back to top ---------- */
+  /* ---------- back to top ---------- */
 
-  var header = document.querySelector(".top");
   var toTop = document.getElementById("to-top");
 
-  if (header || toTop) {
-    var lastY = window.scrollY;
+  if (toTop) {
     var ticking = false;
 
     /*
-     * One scroll listener for both, read inside requestAnimationFrame. Reading
-     * scrollY in the handler itself is what turns a scroll into a stutter,
-     * because every read forces the browser to settle layout first.
+     * Read inside requestAnimationFrame. Reading scrollY in the handler itself
+     * forces the browser to settle layout on every scroll event, which is what
+     * turns a scroll into a stutter.
      */
     var onScroll = function () {
       if (ticking) return;
       ticking = true;
-
       window.requestAnimationFrame(function () {
-        var y = window.scrollY;
-
-        var moved = y - lastY;
-
-        if (header) {
-          if (y < 80) {
-            // Near the top it always shows, so a page never opens headerless.
-            header.classList.remove("tucked");
-            lastY = y;
-          } else if (Math.abs(moved) > 6) {
-            header.classList.toggle("tucked", moved > 0);
-            lastY = y;
-          }
-          /*
-           * lastY deliberately does not move when the change is smaller than
-           * the threshold, so a gentle scroll accumulates until it means
-           * something. Updating it every frame was the bug: at 60fps an
-           * ordinary scroll travels two or three pixels per frame, never
-           * cleared six, and the header stayed hidden all the way up the page.
-           * Large test scrolls hid it, because those clear six easily.
-           */
-        } else {
-          lastY = y;
-        }
-
-        if (toTop) toTop.classList.toggle("shown", y > 900);
-
+        toTop.classList.toggle("shown", window.scrollY > 900);
         ticking = false;
       });
     };
@@ -319,15 +290,11 @@
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
 
-    if (toTop) {
-      toTop.addEventListener("click", function () {
-        var reduce =
-          window.matchMedia &&
-          window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
-        // The header would otherwise stay tucked until the next scroll up.
-        if (header) header.classList.remove("tucked");
-      });
-    }
+    toTop.addEventListener("click", function () {
+      var reduce =
+        window.matchMedia &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+    });
   }
 })();
