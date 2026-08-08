@@ -37,7 +37,10 @@
     />
     <meta name="twitter:image" content="https://auramux.com/og.png" />
 
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/icon-32.png" sizes="32x32" type="image/png" />
+    <link rel="icon" href="/icon-16.png" sizes="16x16" type="image/png" />
+    <link rel="icon" href="/icon-512.png" sizes="512x512" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <link rel="stylesheet" href="/style.css" />
 
     <!--
@@ -190,7 +193,14 @@
     <header class="top">
       <div class="wrap">
         <a class="brand" href="/">
-          <span class="sig" aria-hidden="true">&gt;_</span>
+          <img
+            class="mark"
+            src="/icon-64.png"
+            width="24"
+            height="24"
+            alt=""
+            decoding="async"
+          />
           AuraMux
         </a>
         <span class="pill" id="version-pill">v1.5.0 &middot; beta</span>
@@ -211,6 +221,15 @@
       <!-- ---------------------------------------------------------------- -->
       <section class="hero">
         <div class="wrap">
+          <img
+            class="appicon"
+            src="/icon-256.png"
+            width="88"
+            height="88"
+            alt="The AuraMux app icon"
+            decoding="async"
+          />
+
           <div class="badge-row">
             <span class="badge"
               ><span class="live" aria-hidden="true"></span> Free, in beta</span
@@ -231,9 +250,19 @@
 
           <div class="install">
             <pre><code><span class="p">$ </span>curl -fsSL https://github.com/rmehdee/auramux-releases/releases/latest/download/install.sh | bash</code></pre>
-            <button class="copy" type="button" id="copy" aria-live="polite">
+            <button class="copy primary" type="button" id="copy" aria-live="polite">
               Copy
             </button>
+          </div>
+
+          <div class="cta-row">
+            <a
+              class="ghost"
+              href="https://github.com/rmehdee/auramux-releases/releases"
+              rel="noopener"
+              >Releases and changelog</a
+            >
+            <a class="ghost" href="#updating">Already have it? Updating</a>
           </div>
 
           <p class="after-install">
