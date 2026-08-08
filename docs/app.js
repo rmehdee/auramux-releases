@@ -147,30 +147,35 @@
   ];
 
   var host = document.getElementById("tour-host");
-  var ring = document.getElementById("tour-ring");
   var stopList = document.getElementById("tour-stops");
   var caption = document.getElementById("tour-caption");
 
-  if (host && ring && stopList && caption) {
+  if (host && stopList && caption) {
     var active = null;
 
+    var LIT = "tour-lit";
+
+    /*
+     * The highlight is a class on the target itself, not a positioned overlay.
+     *
+     * The overlay had to be measured, offset against the host, kept above the
+     * window's stacking context and faded in, and any one of those going wrong
+     * produced the same symptom: the caption updates and nothing appears. A
+     * class cannot miss, because there is no position to compute.
+     */
     var show = function (id) {
       active = id;
-      var scroller = host.parentElement;
+
+      var previous = host.querySelector("." + LIT);
+      if (previous) previous.classList.remove(LIT);
+
       var target = id && host.querySelector('[data-tour="' + id + '"]');
       var stop = STOPS.filter(function (s) { return s[0] === id; })[0];
 
       if (!target || !stop) {
-        ring.style.opacity = "0";
         caption.textContent = "";
       } else {
-        var base = host.getBoundingClientRect();
-        var r = target.getBoundingClientRect();
-        ring.style.opacity = "1";
-        ring.style.left = r.left - base.left - 3 + "px";
-        ring.style.top = r.top - base.top - 3 + "px";
-        ring.style.width = r.width + 6 + "px";
-        ring.style.height = r.height + 6 + "px";
+        target.classList.add(LIT);
 
         caption.textContent = "";
         var strong = document.createElement("span");
@@ -180,22 +185,18 @@
 
         /*
          * On a narrow screen the window is wider than the viewport and scrolls
-         * sideways, so the region being pointed at is often off-screen. The
-         * ring was drawn correctly and nobody could see it, which reads as a
-         * label that does nothing. Bring it into view.
+         * sideways, so the region being pointed at is often off-screen.
          */
+        var scroller = host.parentElement;
         if (scroller && scroller.scrollWidth > scroller.clientWidth) {
           var sRect = scroller.getBoundingClientRect();
-          var wanted =
-            r.left + r.width / 2 - (sRect.left + sRect.width / 2);
+          var tRect = target.getBoundingClientRect();
+          var wanted = tRect.left + tRect.width / 2 - (sRect.left + sRect.width / 2);
           if (Math.abs(wanted) > 8) {
             var reduce =
               window.matchMedia &&
               window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-            scroller.scrollBy({
-              left: wanted,
-              behavior: reduce ? "auto" : "smooth",
-            });
+            scroller.scrollBy({ left: wanted, behavior: reduce ? "auto" : "smooth" });
           }
         }
       }
