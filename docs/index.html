@@ -136,7 +136,7 @@
       "name": "Why does AuraMux show up as Aura in my Applications folder?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Because renaming the bundle would have cost you your settings. macOS ties a passcode, a Full Disk Access grant and saved preferences to the bundle identifier and the Keychain entry, not to the name you see. Changing those would have quietly reset all three for everyone already running it. So the wordmark, the splash screen, the status bar, the About panel and the Finder service all say AuraMux, while the application on disk stays Aura and open -a Aura keeps working."
+        "text": "That is expected, and not a sign of a failed install. The app installs as Aura and the menu bar says Aura, which is what keeps your passcode, your permissions and your settings working across updates. Launch it with open -a Aura."
       }
     },
     {
@@ -196,6 +196,7 @@
         <span class="pill" id="version-pill">v1.5.0 &middot; beta</span>
         <span class="spacer"></span>
         <a class="quiet hide-xs" href="#features">Features</a>
+        <a class="quiet hide-xs" href="#updating">Updating</a>
         <a class="quiet hide-xs" href="#faq">FAQ</a>
         <a
           class="quiet"
@@ -674,7 +675,7 @@
             </div>
           </dl>
 
-          <div class="grid">
+          <div class="grid three">
             <div class="card">
               <h3>Full Disk Access</h3>
               <p>
@@ -704,41 +705,77 @@
             </div>
 
             <div class="card">
-              <h3>Updating</h3>
-              <p>
-                AuraMux checks once a day and shows a banner when a newer build
-                exists. The banner copies the install command for you. Quit the
-                app, paste it into a terminal, and you are on the new version.
-              </p>
-              <p class="small">
-                Sessions, scrollback, saved themes, your passcode and your Full
-                Disk Access grant all carry over untouched. The installer refuses
-                to replace a running copy, so quitting first matters.
-              </p>
-            </div>
-
-            <div class="card">
               <h3>Why it installs as Aura</h3>
               <p>
                 The app is AuraMux, but in your Applications folder and in the
-                menu bar it is still called Aura. That is deliberate. macOS ties
-                your passcode, your Full Disk Access grant and your saved
-                settings to the bundle identifier and the Keychain entry, so
-                renaming those would have quietly reset all three.
+                menu bar it is still called Aura. That is deliberate, and it is
+                what keeps your passcode, your permissions and your settings
+                working across updates.
               </p>
               <p class="small">
-                <code>open -a Aura</code> keeps working, and so do installs
-                pointing at the previous repository URLs.
+                Launch it with <code>open -a Aura</code>.
               </p>
             </div>
           </div>
         </div>
       </section>
 
+
+      <!-- ---------------------------------------------------------------- -->
+      <section id="updating">
+        <div class="wrap">
+          <p class="eyebrow" data-n="07">Updating</p>
+
+          <ol class="steps">
+            <li>
+              <b>Quit AuraMux</b>
+              Use <kbd>&#8984;Q</kbd>, or Aura &rarr; Quit. The installer refuses
+              to replace a running copy, and quitting cleanly also lets it save
+              your sessions and scrollback first.
+            </li>
+            <li>
+              <b>Run the same command you installed with</b>
+              It updates in place. There is no separate updater to fetch and no
+              second command to remember.
+              <span class="cmd"
+                >curl -fsSL
+                https://github.com/rmehdee/auramux-releases/releases/latest/download/install.sh
+                | bash</span
+              >
+            </li>
+            <li>
+              <b>Open it again</b>
+              <span class="cmd">open -a Aura</span>
+            </li>
+          </ol>
+
+          <p class="note">
+            <b>Nothing of yours is touched.</b> Sessions, scrollback, saved
+            themes, colour tags, your passcode and your Full Disk Access grant
+            all carry over, because they live outside the app bundle. You will
+            not be asked to grant permissions again or to set your passcode
+            again.
+          </p>
+
+          <p class="note">
+            <b>You do not have to watch for releases.</b> AuraMux checks once a
+            day and shows a banner when a newer build exists, and the banner
+            copies the command for you. <strong>Aura &rarr; Check for
+            Updates&hellip;</strong> forces a check if you would rather not wait.
+          </p>
+
+          <p class="note">
+            <b>Already running an older build under the previous name?</b> The
+            same command updates it, and everything carries over exactly the
+            same way. Older installs still pointing at the previous repository
+            URLs keep working too.
+          </p>
+        </div>
+      </section>
       <!-- ---------------------------------------------------------------- -->
       <section id="faq">
         <div class="wrap">
-          <p class="eyebrow" data-n="07">Questions</p>
+          <p class="eyebrow" data-n="08">Questions</p>
 
           <div class="faq">
             <details>
@@ -780,14 +817,10 @@
                 Why does AuraMux show up as Aura in my Applications folder?
               </summary>
               <p class="ans">
-                Because renaming the bundle would have cost you your settings.
-                macOS ties a passcode, a Full Disk Access grant and saved
-                preferences to the bundle identifier and the Keychain entry, not
-                to the name you see. Changing those would have quietly reset all
-                three for everyone already running it. So the wordmark, the
-                splash screen, the status bar, the About panel and the Finder
-                service all say AuraMux, while the application on disk stays Aura
-                and open -a Aura keeps working.
+                That is expected, and not a sign of a failed install. The app
+                installs as Aura and the menu bar says Aura, which is what keeps
+                your passcode, your permissions and your settings working across
+                updates. Launch it with open -a Aura.
               </p>
             </details>
 
