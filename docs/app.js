@@ -120,4 +120,119 @@
       /* the badge stays hidden */
     });
 
+
+  /* ---------- the annotated walkthrough ---------- */
+
+  /*
+   * Labels sit in a legend below the window rather than as pins on top of it.
+   * Numbered pins covered the exact details they pointed at, the traffic
+   * lights, the git branch, the clock, which defeated the point.
+   *
+   * The ring is measured from the real elements, tagged with data-tour, not
+   * from hardcoded percentages, so it follows the mockup wherever the layout
+   * puts it. Anything measuring zero is not on screen at this width and drops
+   * out of the legend by itself.
+   */
+
+  var STOPS = [
+    ["sessions", "Sessions", "One tab per task. Agents in some, a dev server or logs in others. Click to switch, double-click to rename."],
+    ["needs-input", "Waiting for you", "An amber bell means that session has stopped and is waiting on input. This is what lets you walk away while an agent works."],
+    ["new-output", "New output", "A cyan dot means the session has produced output since you last looked at it. No dot means nothing has changed."],
+    ["git", "Git branch", "Each session shows its current branch, with an amber marker when the working tree is dirty."],
+    ["split", "Split view", "Two sessions side by side, with a draggable divider. Each pane keeps its own title and its own find."],
+    ["archived", "Archived", "Finished with a session but not ready to lose it? Archive it, then restore or delete it later."],
+    ["autosave", "Autosave", "The check confirms sessions are saved, which happens every 20 seconds. Beside it: screenshot to Desktop, lock now, and more."],
+    ["titlebar", "Title bar", "The window title is the active session's name, so you can tell which task you are looking at from the Dock or Mission Control."],
+    ["statusbar", "Status bar", "Working directory, shell, how many sessions were restored on launch, and the scrollback limit."]
+  ];
+
+  var host = document.getElementById("tour-host");
+  var ring = document.getElementById("tour-ring");
+  var stopList = document.getElementById("tour-stops");
+  var caption = document.getElementById("tour-caption");
+
+  if (host && ring && stopList && caption) {
+    var active = null;
+
+    var show = function (id) {
+      active = id;
+      var target = id && host.querySelector('[data-tour="' + id + '"]');
+      var stop = STOPS.filter(function (s) { return s[0] === id; })[0];
+
+      if (!target || !stop) {
+        ring.style.opacity = "0";
+        caption.textContent = "";
+      } else {
+        var base = host.getBoundingClientRect();
+        var r = target.getBoundingClientRect();
+        ring.style.opacity = "1";
+        ring.style.left = r.left - base.left - 3 + "px";
+        ring.style.top = r.top - base.top - 3 + "px";
+        ring.style.width = r.width + 6 + "px";
+        ring.style.height = r.height + 6 + "px";
+
+        caption.textContent = "";
+        var strong = document.createElement("span");
+        strong.textContent = stop[1] + ". ";
+        caption.appendChild(strong);
+        caption.appendChild(document.createTextNode(stop[2]));
+      }
+
+      Array.prototype.forEach.call(stopList.children, function (li) {
+        var button = li.firstChild;
+        var on = button.getAttribute("data-id") === id;
+        button.setAttribute("aria-pressed", on ? "true" : "false");
+        button.classList.toggle("on", on);
+      });
+    };
+
+    var build = function () {
+      stopList.textContent = "";
+      STOPS.forEach(function (stop) {
+        var target = host.querySelector('[data-tour="' + stop[0] + '"]');
+        if (!target) return;
+        var r = target.getBoundingClientRect();
+        if (!r.width || !r.height) return;
+
+        var li = document.createElement("li");
+        var button = document.createElement("button");
+        button.type = "button";
+        button.textContent = stop[1];
+        button.setAttribute("data-id", stop[0]);
+        button.setAttribute("aria-pressed", "false");
+
+        button.addEventListener("mouseenter", function () { show(stop[0]); });
+        button.addEventListener("mouseleave", function () { show(null); });
+        button.addEventListener("focus", function () { show(stop[0]); });
+        button.addEventListener("blur", function () { show(null); });
+        /*
+         * On a touch screen there is no hover to leave, so tapping has to
+         * toggle. With a mouse, hover has already set this one active by the
+         * time the click lands, and toggling would immediately undo it, which
+         * looks like a broken button.
+         */
+        button.addEventListener("click", function () {
+          var hoverable =
+            window.matchMedia && window.matchMedia("(hover: hover)").matches;
+          show(!hoverable && active === stop[0] ? null : stop[0]);
+        });
+
+        li.appendChild(button);
+        stopList.appendChild(li);
+      });
+      if (active) show(active);
+    };
+
+    build();
+    window.addEventListener("resize", build);
+    // A sideways scroll moves the mockup under a ring that is already placed.
+    var scroller = host.parentElement;
+    if (scroller) scroller.addEventListener("scroll", function () {
+      if (active) show(active);
+    });
+    // Fonts land after first paint and shift everything underneath.
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(build).catch(function () {});
+    }
+  }
 })();

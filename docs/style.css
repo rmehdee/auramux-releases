@@ -1359,3 +1359,90 @@ footer {
 .reviews .r-who a:hover {
   color: var(--fg);
 }
+
+/* ---------- the annotated walkthrough ---------- */
+
+.tour-host {
+  position: relative;
+  min-width: 46rem;
+}
+.tour-ring {
+  position: absolute;
+  /* The window sets z-index: 1 to sit above the page glow, so without this the
+     highlight is painted underneath it and never seen. */
+  z-index: 2;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+  border-radius: 6px;
+  background: rgba(62, 207, 142, 0.1);
+  box-shadow: 0 0 0 2px rgba(62, 207, 142, 0.8);
+  transition:
+    opacity 0.15s ease,
+    left 0.15s ease,
+    top 0.15s ease,
+    width 0.15s ease,
+    height 0.15s ease;
+}
+
+.tour-legend {
+  margin-top: 1rem;
+}
+.tour-legend .small {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--faint);
+}
+.only-xs {
+  display: none;
+}
+@media (max-width: 640px) {
+  .only-xs {
+    display: inline;
+  }
+}
+.tour-legend ul {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.tour-legend button {
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--dim);
+  font: inherit;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    background 0.15s ease;
+}
+.tour-legend button:hover {
+  border-color: var(--faint);
+  color: var(--fg);
+}
+.tour-legend button.on {
+  border-color: var(--accent);
+  background: rgba(62, 207, 142, 0.1);
+  color: var(--fg);
+}
+/* Fixed height, so revealing a caption never shifts the page under the cursor. */
+.tour-caption {
+  margin-top: 0.75rem;
+  min-height: 3.25rem;
+  max-width: 74ch;
+  font-size: 0.875rem;
+  color: var(--dim);
+}
+.tour-caption span {
+  color: var(--fg);
+}
