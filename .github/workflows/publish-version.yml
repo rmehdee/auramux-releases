@@ -1,0 +1,52 @@
+# Cutting a release is the only step. This writes the new version into the
+# page GitHub Pages serves, and asks robinmehdee.com to rebuild so its copy
+# follows too.
+name: Publish version
+
+on:
+  release:
+    types: [published]
+  # So it can be re-run by hand if a release was edited after publishing.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-version
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write the released version into the page
+        run: node .github/scripts/set-version.mjs "${{ github.event.release.tag_name }}"
+
+      - name: Commit, but only if something changed
+        run: |
+          if git diff --quiet; then
+            echo "Page already showed this version."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/index.html
+          git commit -m "chore: publish ${{ github.event.release.tag_name || 'latest' }} to the site"
+          git push
+
+      - name: Rebuild robinmehdee.com
+        # The secret goes through env rather than an `if:` condition, because
+        # the secrets context is not available to a step's if expression. It
+        # would silently evaluate empty and the step would never run.
+        env:
+          HOOK: ${{ secrets.NETLIFY_BUILD_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "No NETLIFY_BUILD_HOOK set. Skipping the rebuild."
+            exit 0
+          fi
+          curl -fsSL -X POST -d '{}' "$HOOK"
+          echo "Asked Netlify to rebuild robinmehdee.com."

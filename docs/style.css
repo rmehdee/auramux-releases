@@ -1190,3 +1190,15 @@ footer {
   content: " \2192";
   color: var(--faint);
 }
+
+/* The four points that separate this from the alternatives. Marked with the
+   accent rather than made louder, since the claims should carry themselves. */
+.card.diff {
+  border-left: 2px solid var(--accent-dim);
+}
+.card.diff h3 {
+  color: var(--bright);
+}
+.card.diff p a {
+  color: var(--accent);
+}

@@ -6,7 +6,7 @@
     <title>AuraMux, a macOS terminal built for AI coding sessions</title>
     <meta
       name="description"
-      content="A free macOS terminal with a tab per session, split view, and every session restored after a restart. Badges the tab whenever Claude Code finishes or needs an answer. Universal build, macOS 14 or later."
+      content="A free macOS terminal that keeps every task in its own session, with the folder and git branch visible, and brings them all back after a restart. Badges whichever session is waiting on you. No config file to write. macOS 14 or later, Apple Silicon and Intel."
     />
     <link rel="canonical" href="https://auramux.com/" />
     <meta name="theme-color" content="#17191b" />
@@ -21,7 +21,7 @@
     />
     <meta
       property="og:description"
-      content="A tab per session, every one restored after a restart, and a badge on whichever session is waiting on you."
+      content="Every task in its own session, with its folder and git branch visible, all of them restored after a restart. Nothing to configure."
     />
     <meta property="og:image" content="https://auramux.com/og.png" />
     <meta property="og:image:width" content="1200" />
@@ -33,7 +33,7 @@
     />
     <meta
       name="twitter:description"
-      content="A tab per session, every one restored after a restart, and a badge on whichever session is waiting on you."
+      content="Every task in its own session, with its folder and git branch visible, all of them restored after a restart. Nothing to configure."
     />
     <meta name="twitter:image" content="https://auramux.com/og.png" />
 
@@ -237,13 +237,14 @@
             <span class="badge hidden" id="installs-badge"></span>
           </div>
 
-          <h1>A terminal that tells you which session needs you.</h1>
+          <h1>Ten sessions, one sidebar, nothing to configure.</h1>
 
           <p class="lede">
-            AuraMux keeps every task in its own tab, brings them all back after a
-            restart, and marks the ones waiting on input. It was built for the
-            way work actually goes when several AI coding sessions are running at
-            once and you cannot watch all of them.
+            AuraMux keeps every task in its own session, with its name, its
+            folder and its git branch visible, and brings them all back after a
+            restart. The ones waiting on you are marked, so you can tell at a
+            glance. No config file, no prefix key, no signup. One command and it
+            is there.
           </p>
 
           <div class="install">
@@ -487,10 +488,73 @@
         </div>
       </section>
 
+
       <!-- ---------------------------------------------------------------- -->
-      <section aria-label="Claude Code notifications">
+      <section aria-label="What is different here">
         <div class="wrap">
-          <p class="eyebrow" data-n="02">Claude Code</p>
+          <p class="eyebrow" data-n="02">What is different here</p>
+
+          <div class="grid">
+            <div class="card diff">
+              <h3>Nothing to configure</h3>
+              <p>
+                There is no config file. No prefix key to learn, no plugin
+                manager, no dotfile to carry between machines. You install it and
+                the session list is already there, doing its job. If you have
+                tried a terminal multiplexer before and given up somewhere in the
+                setup, this is the part that is different.
+              </p>
+            </div>
+
+            <div class="card diff">
+              <h3>Claude Code, set up for you</h3>
+              <p>
+                Claude Code only turns on bell notifications by itself in three
+                terminals. Everywhere else it finishes, waits, and nobody
+                notices. AuraMux offers to fix that on first launch with one
+                click, writing a single key into your settings and backing the
+                file up before it does.
+              </p>
+              <p class="small">
+                <a href="#claude-code">How that works</a>
+              </p>
+            </div>
+
+            <div class="card diff">
+              <h3>Sessions you can see, not remember</h3>
+              <p>
+                Every session shows its name, its folder, its git branch and a
+                marker when the tree is dirty, in a sidebar that is always
+                visible. Nothing to press, nothing to hold in your head. Other
+                tools can name sessions; you usually have to ask them to show
+                you.
+              </p>
+            </div>
+
+            <div class="card diff">
+              <h3>Archive instead of close</h3>
+              <p>
+                Finished with a session but not ready to lose it? Archive it. It
+                leaves the list, keeps its history, and comes back whenever you
+                want it. Closing a terminal tab is final. This is not.
+              </p>
+            </div>
+          </div>
+
+          <p class="note">
+            <b>And to be fair about the rest.</b> iTerm2 does far more than this
+            does. Ghostty is faster. A multiplexer like tmux goes places AuraMux
+            cannot, such as a server over SSH. If those are what you need, use
+            them, and so do I. AuraMux is for the narrower case of several
+            long-running sessions on one Mac that you would like to see at a
+            glance without setting anything up.
+          </p>
+        </div>
+      </section>
+      <!-- ---------------------------------------------------------------- -->
+      <section id="claude-code" aria-label="Claude Code notifications">
+        <div class="wrap">
+          <p class="eyebrow" data-n="03">Claude Code</p>
           <div class="callout">
             <h2>It will tell you when Claude Code needs an answer.</h2>
             <p>
@@ -514,7 +578,7 @@
       <!-- ---------------------------------------------------------------- -->
       <section id="features">
         <div class="wrap">
-          <p class="eyebrow" data-n="03">What it does</p>
+          <p class="eyebrow" data-n="04">What it does</p>
           <div class="grid three">
             <div class="card">
               <h3>Tabs</h3>
@@ -591,7 +655,7 @@
       <!-- ---------------------------------------------------------------- -->
       <section aria-label="Keyboard shortcuts and themes">
         <div class="wrap">
-          <p class="eyebrow" data-n="04">Shortcuts</p>
+          <p class="eyebrow" data-n="05">Shortcuts</p>
           <div class="keys">
             <span class="key"><kbd>&#8984;T</kbd> New tab</span>
             <span class="key"><kbd>&#8679;&#8984;O</kbd> New tab in folder</span>
@@ -601,7 +665,7 @@
             <span class="key"><kbd>&#8984;L</kbd> Lock now</span>
           </div>
 
-          <p class="eyebrow" data-n="05" style="margin-top: 3rem">Themes</p>
+          <p class="eyebrow" data-n="06" style="margin-top: 3rem">Themes</p>
           <div class="themes">
             <div class="theme">
               <span class="sw" aria-hidden="true"
@@ -679,7 +743,7 @@
       <!-- ---------------------------------------------------------------- -->
       <section aria-label="Installing and setup">
         <div class="wrap">
-          <p class="eyebrow" data-n="06">After installing</p>
+          <p class="eyebrow" data-n="07">After installing</p>
 
           <dl class="trust" style="margin-bottom: 1.5rem">
             <div>
@@ -749,7 +813,7 @@
       <!-- ---------------------------------------------------------------- -->
       <section id="updating">
         <div class="wrap">
-          <p class="eyebrow" data-n="07">Updating</p>
+          <p class="eyebrow" data-n="08">Updating</p>
 
           <ol class="steps">
             <li>
@@ -800,7 +864,7 @@
       <!-- ---------------------------------------------------------------- -->
       <section id="faq">
         <div class="wrap">
-          <p class="eyebrow" data-n="08">Questions</p>
+          <p class="eyebrow" data-n="09">Questions</p>
 
           <div class="faq">
             <details>
