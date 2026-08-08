@@ -47,14 +47,15 @@ To install somewhere other than /Applications, set `AURA_DEST` first.
 
 ### Claude Code notifications
 
-Claude Code rings the terminal bell when it finishes or needs an answer, and
-AuraMux turns that into a badge on the tab, so a session can be left running in
-the background.
+AuraMux badges any tab whose program rings the terminal bell, so a session can
+be left running in the background and it will tell you when it wants you.
 
-Claude Code only enables that by itself in a few terminals, so AuraMux offers to
-set it up on first launch. It writes one key into `~/.claude/settings.json`,
-backs the file up first, keeps every other setting, and refuses to modify a file
-it cannot parse.
+Claude Code only sends that signal automatically in a few terminals, and AuraMux
+is not one of them, so on first launch it offers to switch it on for you. It also
+detects Claude Code's fullscreen render mode, which bypasses the scrollback
+entirely and would leave tabs restoring empty. Either fix is one click: AuraMux
+edits `~/.claude/settings.json`, backs the file up first, keeps every other
+setting, and refuses to modify a file it cannot parse.
 
 ## Why it installs as Aura
 
@@ -67,17 +68,55 @@ keeps working, and so do installs pointing at the previous repository URLs.
 ## Updating
 
 AuraMux checks once a day and shows a banner when a newer build exists. The
-banner copies the install command for you. Quit the app, paste it into a
-terminal, and you are on the new version. Sessions, scrollback, saved themes,
-your passcode and your Full Disk Access grant all carry over untouched.
+banner copies the install command for you; paste it into any terminal, including
+an AuraMux tab. The installer quits the app for you, saving your sessions first,
+installs, and reopens it.
 
-The installer refuses to replace a running copy, so quitting first matters.
+Sessions, scrollback, saved themes, your passcode and your Full Disk Access grant
+all carry over untouched.
 
-## Report a bug
+## Roadmap
 
-Use **Help → Report a Bug…** inside the app, which pre-fills your version and
-macOS details, or open an
-[issue](https://github.com/rmehdee/auramux-releases/issues/new).
+AuraMux is in beta and built after hours, so nothing here carries a date. Roughly
+in order of priority:
+
+**Persistent sessions.** Today a tab restores its folder and its scrollback, but
+the programs inside it stop when the app quits — the shell runs as a child of the
+application, which is true of every terminal emulator. The goal is genuine detach
+and reattach, so a long build or a running agent survives a restart rather than
+just its output being replayed. The likely route is opt-in `tmux` integration
+rather than reimplementing what `tmux` already does well.
+
+**Notarized builds.** Removes the install command as a requirement and lets a
+browser download open directly, with no security warning. Needs a paid Apple
+Developer account; planned for 1.0.
+
+**Encrypted scrollback.** Session history is written owner-only but unencrypted,
+and terminal output can contain secrets. Planned: encryption at rest, plus an
+opt-out and a purge control for anyone who would rather keep less on disk.
+
+**Broader tool awareness.** AuraMux already recognises Claude Code settings that
+silently break notifications or session restore, and offers to correct them. The
+same treatment for other CLIs as the patterns become clear.
+
+### Not planned
+
+macOS only — no Windows or Linux build. No plugin system, no scripting API, and
+no AI built into the terminal itself. AuraMux is a place to run those tools well,
+not another one of them.
+
+Ideas and votes are welcome in
+[Discussions](https://github.com/rmehdee/auramux-releases/discussions).
+
+## Feedback and bug reports
+
+**Help → Report a Bug…** inside the app pre-fills your version and macOS details,
+or open an [issue](https://github.com/rmehdee/auramux-releases/issues/new)
+directly.
+
+**Help → Write a Review…** opens the
+[Reviews board](https://github.com/rmehdee/auramux-releases/discussions/new?category=reviews).
+If AuraMux is useful to you, that is the most helpful thing you can do for it.
 
 ---
 
