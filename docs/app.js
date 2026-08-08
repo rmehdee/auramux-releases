@@ -65,7 +65,15 @@
       if (!/^\d+\.\d+\.\d+$/.test(version)) return;
 
       var pill = document.getElementById("version-pill");
-      if (pill) pill.textContent = "v" + version + " · beta";
+      var shown = "v" + version + " · beta";
+
+      // Nothing to do in the normal case. The published version is written
+      // into the markup on release, so this fetch usually confirms what is
+      // already on screen rather than replacing it. Writing anyway would
+      // repaint for no reason, and would turn any lag into a visible flicker.
+      if (!pill || pill.textContent === shown) return;
+
+      pill.textContent = shown;
 
       // Keep the structured data in step with what is shown.
       var ld = document.getElementById("ld-app");
