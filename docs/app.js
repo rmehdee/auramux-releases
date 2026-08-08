@@ -287,20 +287,31 @@
       window.requestAnimationFrame(function () {
         var y = window.scrollY;
 
+        var moved = y - lastY;
+
         if (header) {
-          // Near the top it always shows, so the page never opens headerless.
-          // The 6px threshold ignores the jitter of a trackpad settling, which
-          // would otherwise flicker the header on and off.
           if (y < 80) {
+            // Near the top it always shows, so a page never opens headerless.
             header.classList.remove("tucked");
-          } else if (Math.abs(y - lastY) > 6) {
-            header.classList.toggle("tucked", y > lastY);
+            lastY = y;
+          } else if (Math.abs(moved) > 6) {
+            header.classList.toggle("tucked", moved > 0);
+            lastY = y;
           }
+          /*
+           * lastY deliberately does not move when the change is smaller than
+           * the threshold, so a gentle scroll accumulates until it means
+           * something. Updating it every frame was the bug: at 60fps an
+           * ordinary scroll travels two or three pixels per frame, never
+           * cleared six, and the header stayed hidden all the way up the page.
+           * Large test scrolls hid it, because those clear six easily.
+           */
+        } else {
+          lastY = y;
         }
 
         if (toTop) toTop.classList.toggle("shown", y > 900);
 
-        lastY = y;
         ticking = false;
       });
     };
