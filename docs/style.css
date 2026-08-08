@@ -1070,6 +1070,14 @@ footer {
 .steps li {
   counter-increment: step;
   position: relative;
+  /*
+   * Grid and flex items default to min-width: auto, which means they refuse to
+   * shrink below their content. The command below does not wrap, so without
+   * this the item stretches the whole track past the viewport and the page
+   * scrolls sideways. Setting it to 0 lets the item shrink and hands the
+   * overflow to .cmd, which is what the scrollbar there is for.
+   */
+  min-width: 0;
   padding: 0 0 0 3rem;
   min-height: 2rem;
   color: var(--dim);
@@ -1445,4 +1453,45 @@ footer {
 }
 .tour-caption span {
   color: var(--fg);
+}
+
+
+/* ---------- shrinkable grid and flex items ---------- */
+
+/*
+ * Every one of these holds text that can be long and unbroken: a command, a
+ * path, a URL somebody pasted into a review. min-width: auto would let any of
+ * them push the page wider than the screen.
+ */
+.grid > *,
+.trust > div,
+.reviews li,
+.themes > *,
+.fields > *,
+.steps li,
+.card,
+.install pre {
+  min-width: 0;
+}
+
+/* Long unbroken strings wrap rather than stretch their container. */
+.card p,
+.card li,
+.reviews .r-body,
+.tour-caption,
+.review-cta p,
+.note {
+  overflow-wrap: anywhere;
+}
+
+/* On the narrowest phones the sticky header runs out of room: wordmark, version
+   pill and a link do not fit across 320px with padding. The version is on the
+   page and in the structured data either way, so the pill is what goes. */
+@media (max-width: 400px) {
+  .top .wrap {
+    gap: 0.6rem;
+  }
+  .pill {
+    display: none;
+  }
 }
