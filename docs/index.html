@@ -1,0 +1,868 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AuraMux, a macOS terminal built for AI coding sessions</title>
+    <meta
+      name="description"
+      content="A free macOS terminal with a tab per session, split view, and every session restored after a restart. Badges the tab whenever Claude Code finishes or needs an answer. Universal build, macOS 14 or later."
+    />
+    <link rel="canonical" href="https://auramux.com/" />
+    <meta name="theme-color" content="#17191b" />
+    <meta name="color-scheme" content="dark" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="AuraMux" />
+    <meta property="og:url" content="https://auramux.com/" />
+    <meta
+      property="og:title"
+      content="AuraMux, a macOS terminal built for AI coding sessions"
+    />
+    <meta
+      property="og:description"
+      content="A tab per session, every one restored after a restart, and a badge on whichever session is waiting on you."
+    />
+    <meta property="og:image" content="https://auramux.com/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="AuraMux, a macOS terminal built for AI coding sessions"
+    />
+    <meta
+      name="twitter:description"
+      content="A tab per session, every one restored after a restart, and a badge on whichever session is waiting on you."
+    />
+    <meta name="twitter:image" content="https://auramux.com/og.png" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/style.css" />
+
+    <!--
+      Structured data. The SoftwareApplication block is what search engines and
+      answer engines read to describe the app, and alternateName is there so
+      "Aura" and "AuraMux" are understood as one product rather than two.
+      Version is filled in by app.js from the live GitHub release so this can
+      never quietly go stale.
+    -->
+    <script type="application/ld+json" id="ld-app">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://auramux.com/#app",
+            "name": "AuraMux",
+            "alternateName": "Aura",
+            "url": "https://auramux.com/",
+            "applicationCategory": "DeveloperApplication",
+            "applicationSubCategory": "Terminal emulator",
+            "operatingSystem": "macOS 14 (Sonoma) or later",
+            "softwareVersion": "1.5.0",
+            "softwareRequirements": "macOS 14 (Sonoma) or later",
+            "processorRequirements": "Apple Silicon or Intel, universal build",
+            "downloadUrl": "https://github.com/rmehdee/auramux-releases/releases",
+            "installUrl": "https://auramux.com/",
+            "screenshot": "https://auramux.com/og.png",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "author": {
+              "@type": "Person",
+              "name": "Robin Mehdee",
+              "url": "https://robinmehdee.com"
+            },
+            "description": "A native macOS terminal for running AI coding CLIs across many long-lived sessions. One tab per session, split view, session restore, and a status badge on any session that finishes or is waiting for input.",
+            "featureList": [
+              "One tab per session with git branch and dirty state",
+              "Status badge on sessions waiting for input or with new output",
+              "Claude Code notifications via the terminal bell",
+              "Session restore after a restart",
+              "Split view, two sessions side by side",
+              "Seven terminal themes",
+              "Command palette and find across 10,000 lines of scrollback",
+              "Passcode lock or Touch ID",
+              "No telemetry"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://auramux.com/#website",
+            "url": "https://auramux.com/",
+            "name": "AuraMux",
+            "inLanguage": "en",
+            "about": { "@id": "https://auramux.com/#app" }
+          }
+        ]
+      }
+    </script>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "@id": "https://auramux.com/#faq",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is AuraMux?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A terminal app for macOS. It keeps every task in its own tab, brings them all back after a restart, and marks the ones waiting on input. It is free and currently in beta."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How is it different from Terminal.app or iTerm2?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Both are mature and do far more than AuraMux does. AuraMux is built around one situation: several long-lived sessions running at once, usually with AI coding tools in some of them, and needing to know at a glance which one is waiting on you. If you do not work that way, iTerm2 is the better tool and I would use it too."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Will it tell me when Claude Code needs me?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Claude Code rings the terminal bell when it finishes or needs an answer, and AuraMux turns that into a badge on the tab. Claude Code only enables that automatically in a few terminals, so on first launch AuraMux offers to set it up for you. It adds one key to ~/.claude/settings.json, backs the file up first, leaves every other setting alone, and will not touch a file it cannot read."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why does AuraMux show up as Aura in my Applications folder?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Because renaming the bundle would have cost you your settings. macOS ties a passcode, a Full Disk Access grant and saved preferences to the bundle identifier and the Keychain entry, not to the name you see. Changing those would have quietly reset all three for everyone already running it. So the wordmark, the splash screen, the status bar, the About panel and the Finder service all say AuraMux, while the application on disk stays Aura and open -a Aura keeps working."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does it support multiple tabs and split view?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. One tab per session with no limit on how many, and any two of them can be shown side by side with a draggable divider."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does it run on Apple Silicon and Intel Macs?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, it is a universal build. It needs macOS 14 (Sonoma) or later."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is AuraMux free?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, free to download and use."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does it collect any data?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No telemetry of any kind. The only network request it makes is checking for a newer version, once a day."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why does macOS warn about it, and why install with curl?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "AuraMux is ad-hoc signed but not notarized yet, since notarization needs a paid Apple Developer account and that is a post-beta job. A browser download gets flagged by Gatekeeper. Installing with curl avoids it because curl never attaches the quarantine attribute Gatekeeper checks for. Nothing is bypassed or stripped."
+      }
+    }
+  ]
+}
+    </script>
+  </head>
+
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="top">
+      <div class="wrap">
+        <a class="brand" href="/">
+          <span class="sig" aria-hidden="true">&gt;_</span>
+          AuraMux
+        </a>
+        <span class="pill" id="version-pill">v1.5.0 &middot; beta</span>
+        <span class="spacer"></span>
+        <a class="quiet hide-xs" href="#features">Features</a>
+        <a class="quiet hide-xs" href="#faq">FAQ</a>
+        <a
+          class="quiet"
+          href="https://github.com/rmehdee/auramux-releases"
+          rel="noopener"
+          >GitHub</a
+        >
+      </div>
+    </header>
+
+    <main id="main">
+      <!-- ---------------------------------------------------------------- -->
+      <section class="hero">
+        <div class="wrap">
+          <div class="badge-row">
+            <span class="badge"
+              ><span class="live" aria-hidden="true"></span> Free, in beta</span
+            >
+            <span class="badge">macOS 14 or later</span>
+            <span class="badge">Apple Silicon and Intel</span>
+            <span class="badge hidden" id="installs-badge"></span>
+          </div>
+
+          <h1>A terminal that tells you which session needs you.</h1>
+
+          <p class="lede">
+            AuraMux keeps every task in its own tab, brings them all back after a
+            restart, and marks the ones waiting on input. It was built for the
+            way work actually goes when several AI coding sessions are running at
+            once and you cannot watch all of them.
+          </p>
+
+          <div class="install">
+            <pre><code><span class="p">$ </span>curl -fsSL https://github.com/rmehdee/auramux-releases/releases/latest/download/install.sh | bash</code></pre>
+            <button class="copy" type="button" id="copy" aria-live="polite">
+              Copy
+            </button>
+          </div>
+
+          <p class="after-install">
+            Then <code>open -a Aura</code>. Please use the command rather than
+            downloading through a browser: AuraMux is not notarized yet, and
+            macOS only blocks an un-notarized app when the file carries a
+            quarantine flag. Browsers attach that flag, curl does not, so this
+            route opens cleanly. Nothing is bypassed or stripped, the flag is
+            simply never applied.
+          </p>
+        </div>
+      </section>
+
+      <!-- ---------------------------------------------------------------- -->
+      <section aria-label="The interface">
+        <div class="wrap">
+          <p class="eyebrow" data-n="01">The interface</p>
+          <div class="shot-scroll">
+            <div
+              class="win"
+              role="img"
+              aria-label="The AuraMux interface: a sidebar listing four sessions with their git branches and status badges, two split terminal panes running Claude Code and a dev server, and a status bar along the bottom."
+            >
+              <div class="bar">
+                <span class="lights" aria-hidden="true">
+                  <i style="background: #ff5f57"></i>
+                  <i style="background: #febc2e"></i>
+                  <i style="background: #28c840"></i>
+                </span>
+                <span class="name">checkout revamp</span>
+              </div>
+
+              <div class="body">
+                <aside class="side">
+                  <div class="head">
+                    Sessions <span class="n">4</span
+                    ><span class="plus" aria-hidden="true">+</span>
+                  </div>
+                  <div class="rule" aria-hidden="true"></div>
+
+                  <div class="sessions">
+                    <div class="s on">
+                      <span
+                        class="dot"
+                        style="
+                          background: #33ff99;
+                          box-shadow: 0 0 12px rgba(51, 255, 153, 0.32);
+                        "
+                        aria-hidden="true"
+                      ></span>
+                      <span>
+                        <span class="t">checkout revamp</span>
+                        <span class="p">~/dev/app</span>
+                        <span class="b"
+                          >&#8903; feat/checkout-v2<span class="dirty">
+                            &bull;</span
+                          ></span
+                        >
+                      </span>
+                      <span class="st" aria-hidden="true"></span>
+                    </div>
+
+                    <div class="s">
+                      <span
+                        class="dot"
+                        style="background: #7fd7ff"
+                        aria-hidden="true"
+                      ></span>
+                      <span>
+                        <span class="t">npm run dev</span>
+                        <span class="p">~/dev/app</span>
+                        <span class="b">&#8903; feat/checkout-v2</span>
+                      </span>
+                      <span class="st"
+                        ><span class="out" aria-hidden="true"></span
+                      ></span>
+                    </div>
+
+                    <div class="s">
+                      <span
+                        class="dot"
+                        style="background: #ffd479"
+                        aria-hidden="true"
+                      ></span>
+                      <span>
+                        <span class="t">api &middot; migrations</span>
+                        <span class="p">~/dev/api</span>
+                        <span class="b">&#8903; main</span>
+                      </span>
+                      <span class="st">
+                        <span class="bell" aria-hidden="true">
+                          <svg
+                            width="13"
+                            height="13"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                          >
+                            <path
+                              d="M12 2a6 6 0 0 0-6 6c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5a6 6 0 0 0-6-6zm0 20a2.4 2.4 0 0 0 2.4-2h-4.8a2.4 2.4 0 0 0 2.4 2z"
+                            />
+                          </svg>
+                        </span>
+                      </span>
+                    </div>
+
+                    <div class="s">
+                      <span
+                        class="dot"
+                        style="background: #c792ea"
+                        aria-hidden="true"
+                      ></span>
+                      <span>
+                        <span class="t">logs</span>
+                        <span class="p">~/dev/api/logs</span>
+                      </span>
+                      <span class="st" aria-hidden="true"></span>
+                    </div>
+                  </div>
+
+                  <div class="arch">
+                    <div class="lbl">&#9662; Archived <b>1</b></div>
+                    <div class="row">
+                      <i aria-hidden="true"></i>
+                      release-build
+                    </div>
+                  </div>
+
+                  <div class="foot">
+                    <span>Thu Aug 6 12:14 PM</span>
+                    <span style="color: #8d9a92">&#10003;</span>
+                    <span class="tools" aria-hidden="true">
+                      <span>&#65420;</span>
+                      <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.6"
+                      >
+                        <path
+                          d="M3 8.5a2 2 0 0 1 2-2h1.8l1.3-2h7.8l1.3 2H19a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+                        />
+                        <circle cx="12" cy="12.5" r="3.2" />
+                      </svg>
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                      >
+                        <rect x="5" y="11" width="14" height="9" rx="2" />
+                        <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+                      </svg>
+                      <span>&middot;&middot;&middot;</span>
+                    </span>
+                  </div>
+                </aside>
+
+                <div class="term">
+                  <div class="panes">
+                    <section class="pane">
+                      <div class="ph">
+                        <i
+                          style="
+                            background: #33ff99;
+                            box-shadow: 0 0 12px rgba(51, 255, 153, 0.32);
+                          "
+                          aria-hidden="true"
+                        ></i>
+                        checkout revamp
+                      </div>
+                      <pre><span class="g">robin</span><span class="f">@</span><span class="c">mehdee</span> <span class="v">~/dev/app</span> <span class="g">&#10095;</span> claude
+<span class="w">&#10043; Claude Code</span><span class="f"> v2.1 &middot; opus
+
+</span></span><span class="g">&#10095;</span> <span class="w">Refactor the checkout flow to the new API</span>
+
+<span class="c">&#9679;</span> Reading the checkout module.
+<span class="f">  &#9500; Read src/checkout/flow.ts (218 lines)</span>
+<span class="c">&#9679;</span> <span class="a">Edit</span> <span class="c">src/checkout/flow.ts</span> <span class="g">+12</span> <span class="r">&#8722;5</span>
+<span class="c">&#9679;</span> Running tests&hellip;
+  <span class="g">&#10003;</span> 48 passed <span class="f">&middot; 0 failed &middot; 3.1s</span>
+<span class="c">&#9679;</span> Done. Checkout now uses <span class="c">apiClient.v2</span>.
+
+<span class="g">&#10095;</span> <span class="caret" aria-hidden="true"></span></pre>
+                    </section>
+
+                    <div class="divide" aria-hidden="true"></div>
+
+                    <section class="pane">
+                      <div class="ph">
+                        <i style="background: #7fd7ff" aria-hidden="true"></i>
+                        npm run dev
+                      </div>
+                      <pre><span class="g">robin</span><span class="f">@</span><span class="c">mehdee</span> <span class="v">~/dev/app</span> <span class="g">&#10095;</span> npm run dev
+
+  <span class="v">VITE</span> <span class="g">v5.4</span> ready in <span class="a">412 ms</span>
+  <span class="g">&#10148;</span> Local: <span class="c">http://localhost:5173/</span>
+
+<span class="f">[vite]</span> <span class="g">hmr update</span> /src/checkout/flow.ts
+<span class="f">12:11</span> <span class="g">&#10003;</span> compiled cleanly <span class="f">&middot; 89 modules</span>
+
+<span class="g">&#10095;</span> git status
+<span class="f">On branch</span> <span class="v">feat/checkout-v2</span>
+<span class="a">Changes not staged:</span>
+  <span class="g">modified:</span> src/checkout/flow.ts
+
+<span class="g">&#10095;</span> <span class="caret" aria-hidden="true"></span></pre>
+                    </section>
+                  </div>
+
+                  <div class="status">
+                    <span><span class="k">cwd</span> ~/dev/app</span>
+                    <span><span class="k">shell</span> zsh</span>
+                    <span class="right"
+                      ><span class="g">&#9679;</span> 4 sessions restored</span
+                    >
+                    <span><span class="k">scrollback</span> 10k</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------------------------------------------------------------- -->
+      <section aria-label="Claude Code notifications">
+        <div class="wrap">
+          <p class="eyebrow" data-n="02">Claude Code</p>
+          <div class="callout">
+            <h2>It will tell you when Claude Code needs an answer.</h2>
+            <p>
+              Claude Code rings the terminal bell when it finishes a task or
+              needs a decision. AuraMux turns that into a badge on the tab it
+              came from, so a session can be left running in another window while
+              you get on with something else.
+            </p>
+            <p>
+              Claude Code only enables that by itself in a handful of terminals,
+              which is why it often appears to do nothing at all. AuraMux offers
+              to set it up on first launch, with one click. It writes a single
+              key into <code>~/.claude/settings.json</code>, backs the file up
+              first, keeps every other setting exactly as it was, and will not
+              touch a file it cannot parse.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------------------------------------------------------------- -->
+      <section id="features">
+        <div class="wrap">
+          <p class="eyebrow" data-n="03">What it does</p>
+          <div class="grid three">
+            <div class="card">
+              <h3>Tabs</h3>
+              <ul>
+                <li>One tab per session, with no limit on how many</li>
+                <li>Double-click a tab to rename it</li>
+                <li>Current git branch, with a marker when the tree is dirty</li>
+                <li>Optional colour tag per tab</li>
+                <li>
+                  Open a folder from Finder, the Dock, or
+                  <code>open -a Aura &lt;folder&gt;</code>
+                </li>
+              </ul>
+            </div>
+
+            <div class="card">
+              <h3>Status badges</h3>
+              <ul>
+                <li>Amber bell on a session waiting for input</li>
+                <li>Cyan dot on a session with new output since you looked</li>
+                <li>
+                  Both shown in the sidebar, so checking never means switching
+                  tabs
+                </li>
+              </ul>
+            </div>
+
+            <div class="card">
+              <h3>Persistence</h3>
+              <ul>
+                <li>Autosaves every 20 seconds</li>
+                <li>Every session restored on launch</li>
+                <li>
+                  Archive the ones you are done with, then restore or delete them
+                  later
+                </li>
+              </ul>
+            </div>
+
+            <div class="card">
+              <h3>Split view</h3>
+              <ul>
+                <li>Two sessions side by side, two at a time</li>
+                <li>Draggable divider</li>
+                <li>Each pane keeps its own title and its own find</li>
+              </ul>
+            </div>
+
+            <div class="card">
+              <h3>Palette and utilities</h3>
+              <ul>
+                <li>Command palette to jump to a session or run a command</li>
+                <li>Find across 10,000 lines of scrollback per session</li>
+                <li>Screenshot to Desktop, kill and reset, daily update check</li>
+                <li>
+                  Passcode lock or Touch ID. It gates the window only and does
+                  not encrypt stored sessions or scrollback.
+                </li>
+              </ul>
+            </div>
+
+            <div class="card">
+              <h3>Nothing watching you</h3>
+              <p>
+                No telemetry of any kind. No analytics, no crash reporting, no
+                account. The only network request AuraMux makes is checking once
+                a day whether a newer version exists.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------------------------------------------------------------- -->
+      <section aria-label="Keyboard shortcuts and themes">
+        <div class="wrap">
+          <p class="eyebrow" data-n="04">Shortcuts</p>
+          <div class="keys">
+            <span class="key"><kbd>&#8984;T</kbd> New tab</span>
+            <span class="key"><kbd>&#8679;&#8984;O</kbd> New tab in folder</span>
+            <span class="key"><kbd>&#8984;K</kbd> Command palette</span>
+            <span class="key"><kbd>&#8984;F</kbd> Find in terminal</span>
+            <span class="key"><kbd>&#8679;&#8984;T</kbd> Terminal theme</span>
+            <span class="key"><kbd>&#8984;L</kbd> Lock now</span>
+          </div>
+
+          <p class="eyebrow" data-n="05" style="margin-top: 3rem">Themes</p>
+          <div class="themes">
+            <div class="theme">
+              <span class="sw" aria-hidden="true"
+                ><i style="background: #33ff99"></i
+                ><i style="background: #ff6b8b"></i
+                ><i style="background: #ffd479"></i
+                ><i style="background: #7fd7ff"></i
+                ><i style="background: #c792ea"></i
+                ><i style="background: #d3ece1"></i
+              ></span>
+              Aura <span class="tag">default</span>
+            </div>
+            <div class="theme">
+              <span class="sw" aria-hidden="true"
+                ><i style="background: #127a12"></i
+                ><i style="background: #c62828"></i
+                ><i style="background: #8a6d00"></i
+                ><i style="background: #007a8a"></i
+                ><i style="background: #8e24aa"></i
+                ><i style="background: #1a1a1a"></i
+              ></span>
+              Classic <span class="tag">light</span>
+            </div>
+            <div class="theme">
+              <span class="sw" aria-hidden="true"
+                ><i style="background: #50fa7b"></i
+                ><i style="background: #ff5555"></i
+                ><i style="background: #f1fa8c"></i
+                ><i style="background: #bd93f9"></i
+                ><i style="background: #ff79c6"></i
+                ><i style="background: #f8f8f2"></i
+              ></span>
+              Dracula
+            </div>
+            <div class="theme">
+              <span class="sw" aria-hidden="true"
+                ><i style="background: #a3be8c"></i
+                ><i style="background: #bf616a"></i
+                ><i style="background: #ebcb8b"></i
+                ><i style="background: #81a1c1"></i
+                ><i style="background: #b48ead"></i
+                ><i style="background: #d8dee9"></i
+              ></span>
+              Nord
+            </div>
+            <div class="theme">
+              <span class="sw" aria-hidden="true"
+                ><i style="background: #859900"></i
+                ><i style="background: #dc322f"></i
+                ><i style="background: #b58900"></i
+                ><i style="background: #268bd2"></i
+                ><i style="background: #d33682"></i
+                ><i style="background: #93a1a1"></i
+              ></span>
+              Solarized Dark
+            </div>
+            <div class="theme">
+              <span class="sw" aria-hidden="true"
+                ><i style="background: #009e73"></i
+                ><i style="background: #d55e00"></i
+                ><i style="background: #f0e442"></i
+                ><i style="background: #56b4e9"></i
+                ><i style="background: #cc79a7"></i
+                ><i style="background: #e8eaed"></i
+              ></span>
+              Colourblind-safe
+            </div>
+          </div>
+          <p class="after-install">
+            Seven in total, switchable live, with per-colour brightness.
+          </p>
+        </div>
+      </section>
+
+      <!-- ---------------------------------------------------------------- -->
+      <section aria-label="Installing and setup">
+        <div class="wrap">
+          <p class="eyebrow" data-n="06">After installing</p>
+
+          <dl class="trust" style="margin-bottom: 1.5rem">
+            <div>
+              <dt>Price</dt>
+              <dd>Free</dd>
+            </div>
+            <div>
+              <dt>Requires</dt>
+              <dd>macOS 14 or later</dd>
+            </div>
+            <div>
+              <dt>Build</dt>
+              <dd>Universal</dd>
+            </div>
+            <div>
+              <dt>Telemetry</dt>
+              <dd>None</dd>
+            </div>
+          </dl>
+
+          <div class="grid">
+            <div class="card">
+              <h3>Full Disk Access</h3>
+              <p>
+                Every shell AuraMux spawns inherits its security context, so
+                without Full Disk Access macOS will prompt the first time any tab
+                touches Desktop, Documents, Downloads, or an external volume.
+                Granting it once quietens that for every tab. Use
+                <strong>Aura &rarr; Grant Full Disk Access&hellip;</strong>, which
+                opens the right System Settings pane, then add
+                <code>/Applications/Aura.app</code>.
+              </p>
+              <p class="small">
+                Entirely optional. You can also grant each folder as it is asked
+                for.
+              </p>
+            </div>
+
+            <div class="card">
+              <h3>What a first launch asks for</h3>
+              <p>
+                Nothing. AuraMux only reads and writes its own data in
+                <code>~/Library/Application Support/Aura</code> at startup.
+                Folder prompts appear only when a command you run reaches a
+                protected folder, exactly as they do in Apple's Terminal. No
+                keychain prompt unless you set a passcode.
+              </p>
+            </div>
+
+            <div class="card">
+              <h3>Updating</h3>
+              <p>
+                AuraMux checks once a day and shows a banner when a newer build
+                exists. The banner copies the install command for you. Quit the
+                app, paste it into a terminal, and you are on the new version.
+              </p>
+              <p class="small">
+                Sessions, scrollback, saved themes, your passcode and your Full
+                Disk Access grant all carry over untouched. The installer refuses
+                to replace a running copy, so quitting first matters.
+              </p>
+            </div>
+
+            <div class="card">
+              <h3>Why it installs as Aura</h3>
+              <p>
+                The app is AuraMux, but in your Applications folder and in the
+                menu bar it is still called Aura. That is deliberate. macOS ties
+                your passcode, your Full Disk Access grant and your saved
+                settings to the bundle identifier and the Keychain entry, so
+                renaming those would have quietly reset all three.
+              </p>
+              <p class="small">
+                <code>open -a Aura</code> keeps working, and so do installs
+                pointing at the previous repository URLs.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------------------------------------------------------------- -->
+      <section id="faq">
+        <div class="wrap">
+          <p class="eyebrow" data-n="07">Questions</p>
+
+          <div class="faq">
+            <details>
+              <summary>What is AuraMux?</summary>
+              <p class="ans">
+                A terminal app for macOS. It keeps every task in its own tab,
+                brings them all back after a restart, and marks the ones waiting
+                on input. It is free and currently in beta.
+              </p>
+            </details>
+
+            <details>
+              <summary>How is it different from Terminal.app or iTerm2?</summary>
+              <p class="ans">
+                Both are mature and do far more than AuraMux does. AuraMux is
+                built around one situation: several long-lived sessions running
+                at once, usually with AI coding tools in some of them, and
+                needing to know at a glance which one is waiting on you. If you
+                do not work that way, iTerm2 is the better tool and I would use
+                it too.
+              </p>
+            </details>
+
+            <details>
+              <summary>Will it tell me when Claude Code needs me?</summary>
+              <p class="ans">
+                Yes. Claude Code rings the terminal bell when it finishes or
+                needs an answer, and AuraMux turns that into a badge on the tab.
+                Claude Code only enables that automatically in a few terminals,
+                so on first launch AuraMux offers to set it up for you. It adds
+                one key to ~/.claude/settings.json, backs the file up first,
+                leaves every other setting alone, and will not touch a file it
+                cannot read.
+              </p>
+            </details>
+
+            <details>
+              <summary>
+                Why does AuraMux show up as Aura in my Applications folder?
+              </summary>
+              <p class="ans">
+                Because renaming the bundle would have cost you your settings.
+                macOS ties a passcode, a Full Disk Access grant and saved
+                preferences to the bundle identifier and the Keychain entry, not
+                to the name you see. Changing those would have quietly reset all
+                three for everyone already running it. So the wordmark, the
+                splash screen, the status bar, the About panel and the Finder
+                service all say AuraMux, while the application on disk stays Aura
+                and open -a Aura keeps working.
+              </p>
+            </details>
+
+            <details>
+              <summary>Does it support multiple tabs and split view?</summary>
+              <p class="ans">
+                Yes. One tab per session with no limit on how many, and any two
+                of them can be shown side by side with a draggable divider.
+              </p>
+            </details>
+
+            <details>
+              <summary>Does it run on Apple Silicon and Intel Macs?</summary>
+              <p class="ans">
+                Yes, it is a universal build. It needs macOS 14 (Sonoma) or
+                later.
+              </p>
+            </details>
+
+            <details>
+              <summary>Is AuraMux free?</summary>
+              <p class="ans">Yes, free to download and use.</p>
+            </details>
+
+            <details>
+              <summary>Does it collect any data?</summary>
+              <p class="ans">
+                No telemetry of any kind. The only network request it makes is
+                checking for a newer version, once a day.
+              </p>
+            </details>
+
+            <details>
+              <summary>Why does macOS warn about it, and why install with curl?</summary>
+              <p class="ans">
+                AuraMux is ad-hoc signed but not notarized yet, since
+                notarization needs a paid Apple Developer account and that is a
+                post-beta job. A browser download gets flagged by Gatekeeper.
+                Installing with curl avoids it because curl never attaches the
+                quarantine attribute Gatekeeper checks for. Nothing is bypassed
+                or stripped.
+              </p>
+            </details>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <div class="row">
+          <a href="https://github.com/rmehdee/auramux-releases" rel="noopener"
+            >GitHub</a
+          >
+          <a
+            href="https://github.com/rmehdee/auramux-releases/releases"
+            rel="noopener"
+            >Releases</a
+          >
+          <a
+            href="https://github.com/rmehdee/auramux-releases/issues/new"
+            rel="noopener"
+            >Report a bug</a
+          >
+          <a href="https://robinmehdee.com/auramux">More detail</a>
+        </div>
+        <p class="who">
+          Built by
+          <a href="https://robinmehdee.com">Robin Mehdee</a>. A personal side
+          project, made because the problem was mine first. Thank you for trying
+          it.
+        </p>
+      </div>
+    </footer>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>
