@@ -1561,3 +1561,22 @@ footer {
     bottom: 2rem;
   }
 }
+
+/* The sponsor line. Deliberately body text rather than a button: it is an
+   offer, not a call to action, and it sits below the review ask. */
+.support {
+  margin: 1.5rem 0 0;
+  max-width: 62ch;
+  font-size: 0.875rem;
+  color: var(--faint);
+}
+.support a {
+  color: var(--dim);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--dim) 40%, transparent);
+  text-underline-offset: 3px;
+}
+.support a:hover {
+  color: var(--accent);
+  text-decoration-color: var(--accent);
+}
