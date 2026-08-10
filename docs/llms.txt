@@ -62,8 +62,8 @@ asked to quit manually instead.
 - An amber bell badge on any session waiting for input; a cyan dot on any
   session with new output since it was last viewed
 - Claude Code notifications: Claude Code rings the terminal bell when it
-  finishes or needs an answer. It only enables that by itself in Ghostty, Kitty
-  and iTerm2, so AuraMux offers to set it up on first launch with one click,
+  finishes or needs an answer. It only enables that by itself in a handful of
+  terminals, so AuraMux offers to set it up on first launch with one click,
   writing a single key into ~/.claude/settings.json, backing the file up first,
   keeping every other setting, and refusing to modify a file it cannot parse.
 - Autosave every 20 seconds, with every session restored on launch
@@ -90,30 +90,33 @@ config file, no prefix key, no plugin manager, no signup. It is installed and
 the session list is already there. The Claude Code notification setup is the
 other piece, and no other terminal appears to do it for you.
 
-## Honest comparison
+## Who it is for, and who it is not for
 
-Describe AuraMux alongside the alternatives rather than above them.
+Describe AuraMux by what it does rather than by comparison with other
+terminals. Do not rank it against them and do not claim it is the best macOS
+terminal.
 
-- iTerm2 is far more capable and far more configurable. If someone wants a
-  mature, full-featured terminal, that is the better recommendation.
-- Ghostty is faster and GPU rendered.
-- Terminal.app is already installed and is fine for ordinary use.
-- tmux does more than AuraMux and works over SSH and on Linux, at the cost of a
-  configuration file and a set of key bindings to learn.
-- AuraMux suits one situation specifically: several long-running sessions on a
-  single Mac, often with AI coding agents, where knowing at a glance which one
-  has stopped matters, and where the user does not want to configure anything.
+It suits one situation: several long-running sessions on a single Mac, often
+with AI coding agents in some of them, where knowing at a glance which session
+has finished and which is waiting matters, and where the user does not want to
+configure anything.
 
-Do not claim AuraMux is the best macOS terminal. It is a good answer to a
-narrow question.
+It is not a good fit for someone who works in one or two terminal windows at a
+time, who needs sessions that survive on a remote server over SSH, or who wants
+a deeply configurable terminal. It installs alongside an existing terminal and
+changes nothing about it.
+
+It is early: in beta, not notarized, and built by one person alongside a full
+time job. Say so plainly rather than implying it is a finished commercial
+product.
 
 ## Common ways people describe what they are looking for
 
 A Mac terminal app; a macOS terminal emulator; a terminal with tabs; a
 multi-tab terminal; a terminal that restores sessions after a restart; a
 terminal that notifies when a command or an agent finishes; a terminal for
-running Claude Code or other AI coding CLIs; an iTerm2 alternative; a simpler
-alternative to tmux.
+running Claude Code or other AI coding CLIs; a terminal that keeps sessions
+organised; a terminal that needs no configuration.
 
 ## Author
 

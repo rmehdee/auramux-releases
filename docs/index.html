@@ -128,10 +128,10 @@
     },
     {
       "@type": "Question",
-      "name": "How is it different from Terminal.app or iTerm2?",
+      "name": "Who is it for?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Both are mature and do far more than AuraMux does. AuraMux is built around one situation: several long-lived sessions running at once, usually with AI coding tools in some of them, and needing to know at a glance which one is waiting on you. If you do not work that way, iTerm2 is the better tool and I would use it too."
+        "text": "Anyone running several long-lived terminal sessions at once, usually with AI coding agents in some of them, who wants to see at a glance which one has finished and which is waiting. If you work in one or two windows at a time, you will not get much out of it."
       }
     },
     {
@@ -155,7 +155,7 @@
       "name": "What is the best terminal for Mac?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "There is no single answer, and anybody telling you otherwise is selling something. iTerm2 is the most complete and has been for years. Ghostty is the fastest. Terminal.app is already installed and fine for most work. tmux is the one to learn if you need sessions that survive on a server over SSH. cmux and Belay are aimed at the same situation as AuraMux and are both worth a look. AuraMux suits one case in particular: several long-running sessions on one Mac, usually with AI coding agents in some of them, no configuration, and a glance telling you which one has finished and which is waiting."
+        "text": "That depends entirely on how you work, and anyone offering a single name is guessing at your day. AuraMux is built for one situation: several long-running sessions on one Mac, often with AI coding agents, where knowing which one needs you matters and you do not want to configure anything. If that is your day, one command tells you. If it is not, it will not do much for you."
       }
     },
     {
@@ -163,7 +163,7 @@
       "name": "Is there a macOS terminal that restores my sessions after a restart?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "AuraMux does it by default, with no configuration. Sessions autosave every 20 seconds and every one of them comes back on launch, with its name, its folder and its colour tag. iTerm2 can restore window arrangements if you set that up, and tmux keeps sessions alive if you run it and learn it. The difference here is that it is simply on."
+        "text": "AuraMux does it by default, with nothing to configure. Sessions autosave every 20 seconds and every one comes back on launch with its name, its folder, its colour tag and its place in the list."
       }
     },
     {
@@ -171,15 +171,15 @@
       "name": "What is a good terminal for running Claude Code?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Any terminal will run it. The thing that matters once you have more than one session going is whether you can tell which agent needs you without checking each tab. Claude Code rings the terminal bell when it finishes or needs an answer, but it only turns that on by itself in Ghostty, Kitty and iTerm2. AuraMux sets it up for you on first launch and turns the bell into a badge on the tab it came from."
+        "text": "Any terminal will run it. What matters once you have more than one session going is whether you can tell which one needs you without checking each tab. Claude Code rings the terminal bell when it finishes or needs an answer, but only enables that by itself in a handful of terminals, which is why it often seems to do nothing at all. AuraMux sets it up for you on first launch and turns the bell into a badge on the tab it came from."
       }
     },
     {
       "@type": "Question",
-      "name": "Is AuraMux an alternative to iTerm2 or tmux?",
+      "name": "Do I have to give up the terminal I use now?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "It overlaps with both without replacing either. Like tmux it keeps many named sessions and brings them back; unlike tmux it needs no config file, no prefix key and no learning, and it does not work over SSH. Like iTerm2 it is a native macOS terminal with tabs, split view and themes; unlike iTerm2 it does far less, on purpose. If you are happy with what you have, stay with it."
+        "text": "No. It installs alongside whatever you already have and changes nothing about it. Try it on one project for a week and keep whichever you reach for."
       }
     },
     {
@@ -208,10 +208,18 @@
     },
     {
       "@type": "Question",
-      "name": "What makes it different from the others?",
+      "name": "What is there to set up?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "It asks nothing of you. No config file, no prefix key, no plugin manager, no sign-up. You install it and the session list is already there with each session's name, folder, git branch and state. The other piece is Claude Code: it only turns on bell notifications by itself in a few terminals, so AuraMux offers to set that up on first launch. If you have tried a terminal multiplexer and given up somewhere in the setup, that is the part worth knowing about."
+        "text": "Nothing. No config file, no prefix key, no plugin manager, no sign-up. You install it and the session list is already there, showing each session's name, folder, git branch and state."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How finished is it?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Early. It is in beta, it is not notarized yet, and it is a personal project rather than a company. I use it every day, which is how most of the bugs get found. What gets built next is decided by the people actually using it, so if something is missing or annoying, please say so."
       }
     },
     {
@@ -644,16 +652,15 @@
             </details>
 
             <details>
-              <summary>How is it different from Terminal.app or iTerm2?</summary>
-              <p class="ans">
-                Both are mature and do far more than AuraMux does. AuraMux is
-                built around one situation: several long-lived sessions running
-                at once, usually with AI coding tools in some of them, and
-                needing to know at a glance which one is waiting on you. If you
-                do not work that way, iTerm2 is the better tool and I would use
-                it too.
-              </p>
-            </details>
+                <summary>Who is it for?</summary>
+                <p class="ans">
+                  Anyone running several long-lived terminal sessions at once,
+                  usually with AI coding agents in some of them, who wants to
+                  see at a glance which one has finished and which is waiting.
+                  If you work in one or two windows at a time, you will not get
+                  much out of it.
+                </p>
+              </details>
 
             <details>
               <summary>Will it tell me when Claude Code needs me?</summary>
@@ -682,60 +689,53 @@
 
 
             <details>
-              <summary>What is the best terminal for Mac?</summary>
-              <p class="ans">
-                There is no single answer, and anybody telling you otherwise is
-                selling something. iTerm2 is the most complete and has been for
-                years. Ghostty is the fastest. Terminal.app is already installed
-                and fine for most work. tmux is the one to learn if you need
-                sessions that survive on a server over SSH. cmux and Belay are
-                aimed at the same situation as AuraMux and are both worth a look.
-                AuraMux suits one case in particular: several long-running
-                sessions on one Mac, usually with AI coding agents in some of
-                them, no configuration, and a glance telling you which one has
-                finished and which is waiting.
-              </p>
-            </details>
+                <summary>What is the best terminal for Mac?</summary>
+                <p class="ans">
+                  That depends entirely on how you work, and anyone offering a
+                  single name is guessing at your day. AuraMux is built for one
+                  situation: several long-running sessions on one Mac, often
+                  with AI coding agents, where knowing which one needs you
+                  matters and you do not want to configure anything. If that is
+                  your day, one command tells you. If it is not, it will not do
+                  much for you.
+                </p>
+              </details>
 
             <details>
-              <summary>
-                Is there a macOS terminal that restores my sessions after a
-                restart?
-              </summary>
-              <p class="ans">
-                AuraMux does it by default, with no configuration. Sessions
-                autosave every 20 seconds and every one of them comes back on
-                launch, with its name, its folder and its colour tag. iTerm2 can
-                restore window arrangements if you set that up, and tmux keeps
-                sessions alive if you run it and learn it. The difference here is
-                that it is simply on.
-              </p>
-            </details>
+                <summary>
+                  Is there a macOS terminal that restores my sessions after a
+                  restart?
+                </summary>
+                <p class="ans">
+                  AuraMux does it by default, with nothing to configure.
+                  Sessions autosave every 20 seconds and every one comes back on
+                  launch with its name, its folder, its colour tag and its place
+                  in the list.
+                </p>
+              </details>
 
             <details>
-              <summary>What is a good terminal for running Claude Code?</summary>
-              <p class="ans">
-                Any terminal will run it. The thing that matters once you have
-                more than one session going is whether you can tell which agent
-                needs you without checking each tab. Claude Code rings the
-                terminal bell when it finishes or needs an answer, but it only
-                turns that on by itself in Ghostty, Kitty and iTerm2. AuraMux
-                sets it up for you on first launch and turns the bell into a
-                badge on the tab it came from.
-              </p>
-            </details>
+                <summary>What is a good terminal for running Claude Code?</summary>
+                <p class="ans">
+                  Any terminal will run it. What matters once you have more than
+                  one session going is whether you can tell which one needs you
+                  without checking each tab. Claude Code rings the terminal bell
+                  when it finishes or needs an answer, but only enables that by
+                  itself in a handful of terminals, which is why it often seems
+                  to do nothing at all. AuraMux sets it up for you on first
+                  launch and turns the bell into a badge on the tab it came
+                  from.
+                </p>
+              </details>
 
             <details>
-              <summary>Is AuraMux an alternative to iTerm2 or tmux?</summary>
-              <p class="ans">
-                It overlaps with both without replacing either. Like tmux it
-                keeps many named sessions and brings them back; unlike tmux it
-                needs no config file, no prefix key and no learning, and it does
-                not work over SSH. Like iTerm2 it is a native macOS terminal with
-                tabs, split view and themes; unlike iTerm2 it does far less, on
-                purpose. If you are happy with what you have, stay with it.
-              </p>
-            </details>
+                <summary>Do I have to give up the terminal I use now?</summary>
+                <p class="ans">
+                  No. It installs alongside whatever you already have and
+                  changes nothing about it. Try it on one project for a week and
+                  keep whichever you reach for.
+                </p>
+              </details>
 
             <details>
               <summary>How do I update it?</summary>
@@ -775,19 +775,25 @@
             </details>
 
             <details>
-              <summary>What makes it different from the others?</summary>
-              <p class="ans">
-                It asks nothing of you. No config file, no prefix key, no plugin
-                manager, no sign-up. You install it and the session list is
-                already there with each session's name, folder, git branch and
-                state. The other piece is Claude Code: it only turns on bell
-                notifications by itself in a few terminals, so AuraMux offers to
-                set that up on first launch. If you have tried a terminal
-                multiplexer and given up somewhere in the setup, that is the
-                part worth knowing about.
-              </p>
-            </details>
+                <summary>What is there to set up?</summary>
+                <p class="ans">
+                  Nothing. No config file, no prefix key, no plugin manager, no
+                  sign-up. You install it and the session list is already there,
+                  showing each session's name, folder, git branch and state.
+                </p>
+              </details>
             <details>
+                <summary>How finished is it?</summary>
+                <p class="ans">
+                  Early. It is in beta, it is not notarized yet, and it is a
+                  personal project rather than a company. I use it every day,
+                  which is how most of the bugs get found. What gets built next
+                  is decided by the people actually using it, so if something is
+                  missing or annoying, please say so.
+                </p>
+              </details>
+
+              <details>
               <summary>Does it support multiple tabs and split view?</summary>
               <p class="ans">
                 Yes. One tab per session with no limit on how many, and any two
