@@ -82,7 +82,7 @@
             "applicationCategory": "DeveloperApplication",
             "applicationSubCategory": "Terminal emulator",
             "operatingSystem": "macOS 14 (Sonoma) or later",
-            "softwareVersion": "1.6.0",
+            "softwareVersion": "1.6.1",
             "softwareRequirements": "macOS 14 (Sonoma) or later",
             "processorRequirements": "Apple Silicon or Intel, universal build",
             "downloadUrl": "https://github.com/rmehdee/auramux-releases/releases",
@@ -313,7 +313,7 @@
           />
           AuraMux
         </a>
-        <span class="pill" id="version-pill">v1.6.0 &middot; beta</span>
+        <span class="pill" id="version-pill">v1.6.1 &middot; beta</span>
         <span class="spacer"></span>
         <a class="quiet hide-xs" href="#features">Features</a>
         <a class="quiet hide-sm" href="#whats-new">What&rsquo;s new</a>
@@ -617,11 +617,34 @@
                script, not this. -->
           <!-- whats-new:start -->
         <div class="rel-tablist" id="rel-tablist" aria-label="Releases" hidden>
+          <button class="rel-tab" type="button" data-rel="1-6-1">1.6.1</button>
           <button class="rel-tab" type="button" data-rel="1-6-0">1.6.0</button>
           <button class="rel-tab" type="button" data-rel="1-5-7">1.5.7</button>
           <button class="rel-tab" type="button" data-rel="1-5-6">1.5.6</button>
-          <button class="rel-tab" type="button" data-rel="1-5-5">1.5.5</button>
         </div>
+
+        <article class="rel" id="rel-1-6-1">
+          <h3 class="rel-v">1.6.1</h3>
+          <p class="rel-meta">
+            <time datetime="2026-08-10">10 August 2026</time>
+          </p>
+
+          <div class="rel-body">
+              <h4>Bug fix</h4>
+              <p><strong>Banners could be unreadable.</strong> The notification setup and update banners painted only a faint colour tint with no background of their own, and the window behind them is translucent so the blur can reach your terminal. That meant a banner picked up whatever was behind the app: over a light window it washed out to near white and its text disappeared into it.</p>
+              <p>Both banners now paint a solid background of their own, and take their text and divider colours from the theme you have selected, so they stay readable whatever is behind the window and on light themes as well as dark ones.</p>
+              <p>If you saw a message you could not read at the top of the window, it was most likely this one, confirming that Claude Code setup had been applied:</p>
+              <p>&gt; Done. Restart Claude Code in your open tabs (/exit, then claude) to apply it.</p>
+              <p>Nothing was wrong on your side. Running <code>/exit</code> and then <code>claude</code> in your open tabs applies it.</p>
+              <p>Update by pasting this into any terminal, including an AuraMux tab:</p>
+          </div>
+
+          <p class="rel-more">
+            <a href="https://github.com/rmehdee/auramux-releases/releases/tag/v1.6.1" target="_blank" rel="noopener"
+              >All of the 1.6.1 notes on GitHub &rarr;</a
+            >
+          </p>
+        </article>
 
         <article class="rel" id="rel-1-6-0">
           <h3 class="rel-v">1.6.0</h3>
@@ -690,28 +713,6 @@
           <p class="rel-more">
             <a href="https://github.com/rmehdee/auramux-releases/releases/tag/v1.5.6" target="_blank" rel="noopener"
               >All of the 1.5.6 notes on GitHub &rarr;</a
-            >
-          </p>
-        </article>
-
-        <article class="rel" id="rel-1-5-5">
-          <h3 class="rel-v">1.5.5</h3>
-          <p class="rel-meta">
-            <time datetime="2026-08-09">9 August 2026</time>
-          </p>
-
-          <div class="rel-body">
-              <h4>Important: fixes a case where scrollback could be lost</h4>
-              <p><strong>Please update.</strong> A tab that started a shell and went straight into a full-screen tool — Claude Code, vim, less — could overwrite its saved history with an almost-empty capture, and lose the backup copy shortly after.</p>
-              <p>The save check asked only whether a new capture had <em>any</em> content. It never checked whether it was drastically smaller than the history already saved. A shell that immediately enters a full-screen tool has a two-line buffer, and that was enough to replace thousands of stored lines.</p>
-              <p>AuraMux now refuses any save that would discard the bulk of existing history. Stale history is kept in preference to losing real history. One deliberate side effect: after running <code>clear</code>, the stored log stays until the session builds back up — that trade is intentional.</p>
-              <p>This affects 1.5.1 through 1.5.4. Earlier versions never saved full-screen sessions at all, so they were not exposed.</p>
-              <p>Also in this release: the Claude Code fullscreen notice no longer claims <em>all</em> tabs will come back empty. It reads a global setting, not the state of any tab, and now says so.</p>
-          </div>
-
-          <p class="rel-more">
-            <a href="https://github.com/rmehdee/auramux-releases/releases/tag/v1.5.5" target="_blank" rel="noopener"
-              >All of the 1.5.5 notes on GitHub &rarr;</a
             >
           </p>
         </article>
