@@ -188,6 +188,13 @@ pre {
     display: none;
   }
 }
+/* Five links plus the version pill is more than the header can hold on a
+   narrow laptop. This is the widest of them, so it goes first. */
+@media (max-width: 700px) {
+  .top .hide-sm {
+    display: none;
+  }
+}
 
 /* ---------- sections ---------- */
 
@@ -1622,4 +1629,192 @@ footer {
 .after-install .badge {
   margin-left: 0.4rem;
   vertical-align: 0.05em;
+}
+
+/* ---------- what's new ---------- */
+
+/*
+ * Two states, deliberately. With JavaScript off this is a plain stacked
+ * changelog: every release, in full, one after another, which is a perfectly
+ * good page and the one a crawler reads. With JavaScript on it becomes a tab
+ * strip over a single panel, because four releases stacked is a lot of scrolling
+ * between the features and the reviews.
+ *
+ * The `js` class is set by an inline script in the head, so the collapse happens
+ * at first paint rather than whenever app.js finishes loading.
+ */
+
+.rel-tablist[hidden] {
+  display: none;
+}
+.rel-tablist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1.5rem;
+}
+
+.rel-tab {
+  font: inherit;
+  font-size: 0.8125rem;
+  font-family: var(--mono);
+  color: var(--dim);
+  background: color-mix(in srgb, var(--surface) 55%, transparent);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.3rem 0.85rem;
+  cursor: pointer;
+  transition: color 0.14s ease, border-color 0.14s ease;
+}
+.rel-tab:hover {
+  color: var(--fg);
+  border-color: var(--faint);
+}
+.rel-tab[aria-selected="true"] {
+  color: var(--bg);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+/* The pill already carries the selection, but a border alone is not enough for
+   anyone navigating by keyboard. */
+.rel-tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+@media (forced-colors: active) {
+  .rel-tab[aria-selected="true"] {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+}
+
+/* No JavaScript: a stacked list, so each release needs its own separation. */
+.rel + .rel {
+  margin-top: 2.25rem;
+  padding-top: 2.25rem;
+  border-top: 1px solid var(--line-soft);
+}
+
+.rel-v {
+  font-family: var(--mono);
+  font-size: 1.05rem;
+  color: var(--bright);
+}
+.rel-meta {
+  margin: 0.3rem 0 1.25rem;
+  color: var(--faint);
+  font-size: 0.8125rem;
+}
+
+.rel-body h4 {
+  margin: 1.75rem 0 0.75rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--faint);
+  font-weight: 500;
+}
+.rel-body > :first-child {
+  margin-top: 0;
+}
+.rel-body p {
+  margin: 0 0 0.9rem;
+  color: var(--dim);
+  font-size: 0.9375rem;
+  max-width: 46rem;
+}
+/* The notes lead each item with a bold sentence saying what changed. That
+   sentence is the thing being skimmed, so it gets the brightest text. */
+.rel-body strong {
+  color: var(--bright);
+  font-weight: 600;
+}
+.rel-body code {
+  font-family: var(--mono);
+  font-size: 0.875em;
+  color: var(--fg);
+  background: var(--surface-2);
+  border-radius: 4px;
+  padding: 0.05em 0.35em;
+}
+.rel-body a {
+  color: var(--accent);
+}
+.rel-body ul {
+  list-style: none;
+  margin: 0 0 0.9rem;
+  padding: 0;
+  max-width: 46rem;
+}
+.rel-body li {
+  position: relative;
+  padding-left: 1.15rem;
+  margin-bottom: 0.5rem;
+  color: var(--dim);
+  font-size: 0.9375rem;
+}
+.rel-body li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.65em;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--accent-dim);
+}
+
+.rel-more {
+  margin: 1.5rem 0 0;
+  font-size: 0.875rem;
+}
+.rel-more a {
+  color: var(--dim);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--dim) 40%, transparent);
+  text-underline-offset: 3px;
+}
+.rel-more a:hover {
+  color: var(--accent);
+  text-decoration-color: var(--accent);
+}
+
+/*
+ * JavaScript available. Show the newest release only, until app.js wires the
+ * strip up and starts marking panels open and closed.
+ *
+ * Both classes are needed, and both are set on every panel. `is-open` has to
+ * outrank the `:first-of-type` default so a later release can be shown at all;
+ * `is-closed` has to outrank it the other way so the newest one can be put
+ * away. They tie on specificity, and `is-closed` wins by coming last, which is
+ * only safe because a panel is never given both.
+ */
+.js .rel {
+  display: none;
+}
+.js .rel:first-of-type {
+  display: block;
+}
+.js .rel.is-open {
+  display: block;
+}
+.js .rel.is-closed {
+  display: none;
+}
+/* The selected tab says which release this is, so the heading would be saying
+   it twice. It stays in the document for screen readers and for anything
+   reading the outline. */
+.js .rel-v {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.js .rel + .rel {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
 }

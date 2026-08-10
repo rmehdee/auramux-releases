@@ -1,12 +1,19 @@
-# Cutting a release is the only step. This writes the new version into the
-# page GitHub Pages serves, and asks robinmehdee.com to rebuild so its copy
-# follows too.
-name: Publish version
+# Cutting a release is the only step. This writes the new version and the
+# release notes into the page GitHub Pages serves, and asks robinmehdee.com to
+# rebuild so its copy follows too.
+name: Publish release
 
 on:
   release:
-    types: [published]
-  # So it can be re-run by hand if a release was edited after publishing.
+    # Edited as well as published, because the notes on the page are the notes
+    # on GitHub, and fixing a typo in one should fix it in the other. Deleted,
+    # because a release pulled after the fact should leave the page.
+    types: [published, edited, deleted]
+  # Nothing fires an event when a release is edited through the API by something
+  # that does not raise one, so the page is reconciled once a day regardless.
+  schedule:
+    - cron: "23 6 * * *"
+  # So it can be re-run by hand.
   workflow_dispatch:
 
 permissions:
@@ -19,6 +26,12 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # A prerelease is not what the site should be advertising. Without this, a
+    # beta tag would put its own version in the header pill.
+    if: >-
+      github.event_name != 'release' ||
+      (github.event.release.prerelease == false &&
+       github.event.release.draft == false)
     steps:
       - uses: actions/checkout@v4
         # A release event checks out the tag, which leaves a detached HEAD and
@@ -27,18 +40,29 @@ jobs:
           ref: main
 
       - name: Write the released version into the page
-        run: node .github/scripts/set-version.mjs "${{ github.event.release.tag_name }}"
+        # Only a freshly published release names its own tag here. On an edit or
+        # a delete the tag in the payload may be an older release, and writing
+        # that into the header would walk the version backwards. An empty TAG
+        # makes the script ask GitHub which release is actually the latest.
+        env:
+          TAG: ${{ github.event.action == 'published' && github.event.release.tag_name || '' }}
+        run: node .github/scripts/set-version.mjs $TAG
+
+      - name: Write the release notes into the page
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node .github/scripts/sync-releases.mjs
 
       - name: Commit, but only if something changed
         run: |
           if git diff --quiet; then
-            echo "Page already showed this version."
+            echo "The page already matches the releases."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/index.html
-          git commit -m "chore: publish ${{ github.event.release.tag_name || 'latest' }} to the site"
+          git add docs/index.html docs/sitemap.xml
+          git commit -m "chore: publish ${{ github.event.release.tag_name || 'the latest release' }} to the site"
           git push
 
       - name: Rebuild robinmehdee.com

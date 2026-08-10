@@ -297,4 +297,93 @@
       window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
     });
   }
+
+  /* ---------- what's new, one release at a time ---------- */
+
+  /*
+   * The notes for the last few releases are all in the HTML, written there when
+   * a release is published. Without this they read as a stacked changelog,
+   * which is correct but long. This turns them into a tab strip.
+   *
+   * The roles are added here rather than shipped in the markup on purpose. A
+   * tablist that cannot be operated is worse for someone on a screen reader
+   * than four plain headings, so the page only claims to be tabs once it can
+   * actually behave like them.
+   */
+
+  var tablist = document.getElementById("rel-tablist");
+  var tabs = tablist
+    ? Array.prototype.slice.call(tablist.querySelectorAll(".rel-tab"))
+    : [];
+
+  if (tabs.length > 1) {
+    var panels = tabs.map(function (tab) {
+      return document.getElementById("rel-" + tab.getAttribute("data-rel"));
+    });
+
+    // If the markup and the script ever disagree, leave the stack alone.
+    if (panels.every(Boolean)) {
+      tablist.hidden = false;
+      tablist.setAttribute("role", "tablist");
+
+      var select = function (index, moveFocus) {
+        tabs.forEach(function (tab, i) {
+          var on = i === index;
+          tab.setAttribute("aria-selected", on ? "true" : "false");
+          // Only the selected tab is in the tab order. Arrow keys move between
+          // them, which is how a tablist is expected to behave.
+          tab.tabIndex = on ? 0 : -1;
+          // Both, not just one. The stylesheet shows the first panel by default
+          // so there is something on screen before this runs, and it takes an
+          // explicit `is-open` to put a later release in front of that.
+          panels[i].classList.toggle("is-open", on);
+          panels[i].classList.toggle("is-closed", !on);
+        });
+        if (moveFocus) tabs[index].focus();
+      };
+
+      tabs.forEach(function (tab, i) {
+        var panel = panels[i];
+
+        tab.id = tab.id || "rel-tab-" + tab.getAttribute("data-rel");
+        tab.setAttribute("role", "tab");
+        tab.setAttribute("aria-controls", panel.id);
+
+        panel.setAttribute("role", "tabpanel");
+        panel.setAttribute("aria-labelledby", tab.id);
+        // So the notes can be scrolled and read by keyboard once a tab is
+        // chosen. The panel is a block of text, not a widget.
+        panel.tabIndex = 0;
+
+        tab.addEventListener("click", function () {
+          select(i, false);
+        });
+
+        tab.addEventListener("keydown", function (event) {
+          var step =
+            event.key === "ArrowRight" || event.key === "ArrowDown"
+              ? 1
+              : event.key === "ArrowLeft" || event.key === "ArrowUp"
+                ? -1
+                : 0;
+
+          if (step) {
+            event.preventDefault();
+            select((i + step + tabs.length) % tabs.length, true);
+            return;
+          }
+          if (event.key === "Home") {
+            event.preventDefault();
+            select(0, true);
+          }
+          if (event.key === "End") {
+            event.preventDefault();
+            select(tabs.length - 1, true);
+          }
+        });
+      });
+
+      select(0, false);
+    }
+  }
 })();
