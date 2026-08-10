@@ -49,7 +49,7 @@
     <link rel="icon" href="/icon-16.png" sizes="16x16" type="image/png" />
     <link rel="icon" href="/icon-512.png" sizes="512x512" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
-    <link rel="stylesheet" href="/style.css?v=5ca71ec3" />
+    <link rel="stylesheet" href="/style.css?v=9825040f" />
 
     <!--
       Structured data. The SoftwareApplication block is what search engines and
@@ -220,6 +220,22 @@
       "acceptedAnswer": {
         "@type": "Answer",
         "text": "Early. It is in beta, it is not notarized yet, and it is a personal project rather than a company. I use it every day, which is how most of the bugs get found. What gets built next is decided by the people actually using it, so if something is missing or annoying, please say so."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What does the passcode lock actually protect?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The window, and only the window. It stops someone walking up to an unlocked Mac and reading what is on screen. It does not encrypt your saved sessions or scrollback on disk, so it is not a substitute for FileVault."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What themes are there?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Seven, switchable live with per-colour brightness: Aura, which is the default, Classic, which is light, Solarized Dark, Dracula, Nord, a colourblind-safe palette, and No Theme. They are picked for reading AI CLI output for hours rather than for screenshots."
       }
     },
     {
@@ -562,18 +578,20 @@
       <section id="features">
         <div class="wrap">
           <ul class="feature-list">
-            <li>One session per task, with its folder and git branch on the tab</li>
-            <li>A badge on any session that finishes or needs an answer</li>
-            <li>Claude Code notifications, set up for you on first launch</li>
-            <li>Every session restored after a restart, autosaved every 20 seconds</li>
-            <li>Archive a session without losing its history</li>
+            <li>Folder and git branch on every tab</li>
+            <li>Badge when a session needs you</li>
+            <li>Badge when a session has new output</li>
+            <li>Claude Code notifications, set up in one click</li>
+            <li>Every session restored after a restart</li>
+            <li>Autosaves every 20 seconds</li>
+            <li>Archive a session, keep its history</li>
             <li>Split view, two sessions side by side</li>
-            <li>Command palette, and find across 10,000 lines of scrollback</li>
-            <li>Seven themes, switchable live</li>
-            <li>Passcode lock or Touch ID on the window</li>
-            <li>Open a folder from Finder, the Dock, or <code>open -a Aura</code></li>
-            <li>Screenshot to Desktop, kill and reset, daily update check</li>
-            <li>No telemetry, no account, no sign-up</li>
+            <li>Command palette</li>
+            <li>Find across 10,000 lines of scrollback</li>
+            <li>Seven themes, switch live</li>
+            <li>Passcode or Touch ID lock</li>
+            <li>Screenshot to Desktop, kill and reset</li>
+            <li>No telemetry, no account</li>
           </ul>
         </div>
       </section>
@@ -777,6 +795,27 @@
                   which is how most of the bugs get found. What gets built next
                   is decided by the people actually using it, so if something is
                   missing or annoying, please say so.
+                </p>
+              </details>
+
+              <details>
+                <summary>What does the passcode lock actually protect?</summary>
+                <p class="ans">
+                  The window, and only the window. It stops someone walking up
+                  to an unlocked Mac and reading what is on screen. It does not
+                  encrypt your saved sessions or scrollback on disk, so it is
+                  not a substitute for FileVault.
+                </p>
+              </details>
+
+              <details>
+                <summary>What themes are there?</summary>
+                <p class="ans">
+                  Seven, switchable live with per-colour brightness: Aura, which
+                  is the default, Classic, which is light, Solarized Dark,
+                  Dracula, Nord, a colourblind-safe palette, and No Theme. They
+                  are picked for reading AI CLI output for hours rather than for
+                  screenshots.
                 </p>
               </details>
 
