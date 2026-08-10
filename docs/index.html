@@ -49,7 +49,7 @@
     <link rel="icon" href="/icon-16.png" sizes="16x16" type="image/png" />
     <link rel="icon" href="/icon-512.png" sizes="512x512" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
-    <link rel="stylesheet" href="/style.css?v=53a9d810" />
+    <link rel="stylesheet" href="/style.css?v=5ca71ec3" />
 
     <!--
       Structured data. The SoftwareApplication block is what search engines and
@@ -155,7 +155,7 @@
       "name": "What is the best terminal for Mac?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "There is no single answer, and anybody telling you otherwise is selling something. iTerm2 is the most complete and has been for years. Ghostty is the fastest. Terminal.app is already installed and fine for most work. tmux is the one to learn if you need sessions that survive on a server over SSH. AuraMux is worth looking at for one specific situation: several long-running sessions on one Mac, usually with AI coding agents in some of them, where you need to see at a glance which one has finished and which is waiting on you."
+        "text": "There is no single answer, and anybody telling you otherwise is selling something. iTerm2 is the most complete and has been for years. Ghostty is the fastest. Terminal.app is already installed and fine for most work. tmux is the one to learn if you need sessions that survive on a server over SSH. cmux and Belay are aimed at the same situation as AuraMux and are both worth a look. AuraMux suits one case in particular: several long-running sessions on one Mac, usually with AI coding agents in some of them, no configuration, and a glance telling you which one has finished and which is waiting."
       }
     },
     {
@@ -180,6 +180,38 @@
       "acceptedAnswer": {
         "@type": "Answer",
         "text": "It overlaps with both without replacing either. Like tmux it keeps many named sessions and brings them back; unlike tmux it needs no config file, no prefix key and no learning, and it does not work over SSH. Like iTerm2 it is a native macOS terminal with tabs, split view and themes; unlike iTerm2 it does far less, on purpose. If you are happy with what you have, stay with it."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I update it?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Run the same command you installed with, in any terminal including AuraMux itself. It quits the app for you through the same path as Command Q, so sessions and scrollback are saved first, then installs and reopens. Sessions, scrollback, themes, colour tags, your passcode and your Full Disk Access grant all carry over. If it has not shut down cleanly within thirty seconds the update stops rather than overwrite a running app. Set AURA_NO_RESTART=1 to be asked to quit manually instead."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does it need Full Disk Access?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No, but it helps. Every shell AuraMux spawns inherits its security context, so without it macOS prompts the first time any session touches Desktop, Documents, Downloads or an external volume. Granting it once quietens that everywhere. Use Aura, Grant Full Disk Access, which opens the right System Settings pane, then add /Applications/Aura.app."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What does it ask for on first launch?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Nothing. AuraMux only reads and writes its own data in ~/Library/Application Support/Aura at startup. Folder prompts appear only when a command you run reaches a protected folder, exactly as they do in Apple's Terminal. There is no keychain prompt unless you set a passcode."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What makes it different from the others?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "It asks nothing of you. No config file, no prefix key, no plugin manager, no sign-up. You install it and the session list is already there with each session's name, folder, git branch and state. The other piece is Claude Code: it only turns on bell notifications by itself in a few terminals, so AuraMux offers to set that up on first launch. If you have tried a terminal multiplexer and given up somewhere in the setup, that is the part worth knowing about."
       }
     },
     {
@@ -249,7 +281,6 @@
         <span class="pill" id="version-pill">v1.5.7 &middot; beta</span>
         <span class="spacer"></span>
         <a class="quiet hide-xs" href="#features">Features</a>
-        <a class="quiet hide-xs" href="#updating">Updating</a>
         <a class="quiet hide-xs" href="#reviews">Reviews</a>
         <a class="quiet hide-xs" href="#faq">FAQ</a>
         <a
@@ -260,7 +291,6 @@
     </header>
 
     <main id="main">
-      <!-- ---------------------------------------------------------------- -->
       <section class="hero">
         <div class="wrap">
           <img
@@ -272,23 +302,12 @@
             decoding="async"
           />
 
-          <div class="badge-row">
-            <span class="badge"
-              ><span class="live" aria-hidden="true"></span> Free, in beta</span
-            >
-            <span class="badge">macOS 14 or later</span>
-            <span class="badge">Apple Silicon and Intel</span>
-            <span class="badge hidden" id="installs-badge"></span>
-          </div>
-
           <h1>Ten sessions, one sidebar, nothing to configure.</h1>
 
           <p class="lede">
-            AuraMux keeps every task in its own session, with its name, its
-            folder and its git branch visible, and brings them all back after a
-            restart. The ones waiting on you are marked, so you can tell at a
-            glance. No config file, no prefix key, no signup. One command and it
-            is there.
+            A free macOS terminal for running several AI coding sessions at
+            once. Each one keeps its folder and git branch in view, all of them
+            come back after a restart, and the one waiting on you is marked.
           </p>
 
           <div class="install">
@@ -298,29 +317,16 @@
             </button>
           </div>
 
-          <div class="cta-row">
-            <a
-              class="ghost"
-              href="https://github.com/rmehdee/auramux-releases/releases" target="_blank" rel="noopener">Releases and changelog</a
-            >
-            <a class="ghost" href="#updating">Already have it? Updating</a>
-          </div>
-
           <p class="after-install">
-            Then <code>open -a Aura</code>. Please use the command rather than
-            downloading through a browser: AuraMux is not notarized yet, and
-            macOS only blocks an un-notarized app when the file carries a
-            quarantine flag. Browsers attach that flag, curl does not, so this
-            route opens cleanly. Nothing is bypassed or stripped, the flag is
-            simply never applied.
+            Then <code>open -a Aura</code>. macOS 14 or later, Apple Silicon and
+            Intel. Free, in beta, no account.
+            <span class="badge hidden" id="installs-badge"></span>
           </p>
         </div>
       </section>
 
-      <!-- ---------------------------------------------------------------- -->
       <section aria-label="The interface">
         <div class="wrap">
-          <p class="eyebrow" data-n="01">The interface</p>
           <div class="shot-scroll">
             <!-- The overlay lives inside the scroller, so the highlight travels
                  with the content instead of drifting off it. -->
@@ -545,383 +551,28 @@
         </div>
       </section>
 
-
-      <!-- ---------------------------------------------------------------- -->
-      <section aria-label="What is different here">
-        <div class="wrap">
-          <p class="eyebrow" data-n="02">What is different here</p>
-
-          <div class="grid">
-            <div class="card diff">
-              <h3>Nothing to configure</h3>
-              <p>
-                There is no config file. No prefix key to learn, no plugin
-                manager, no dotfile to carry between machines. You install it and
-                the session list is already there, doing its job. If you have
-                tried a terminal multiplexer before and given up somewhere in the
-                setup, this is the part that is different.
-              </p>
-            </div>
-
-            <div class="card diff">
-              <h3>Claude Code, set up for you</h3>
-              <p>
-                Claude Code only turns on bell notifications by itself in three
-                terminals. Everywhere else it finishes, waits, and nobody
-                notices. AuraMux offers to fix that on first launch with one
-                click, writing a single key into your settings and backing the
-                file up before it does.
-              </p>
-              <p class="small">
-                <a href="#claude-code">How that works</a>
-              </p>
-            </div>
-
-            <div class="card diff">
-              <h3>Sessions you can see, not remember</h3>
-              <p>
-                Every session shows its name, its folder, its git branch and a
-                marker when the tree is dirty, in a sidebar that is always
-                visible. Nothing to press, nothing to hold in your head. Other
-                tools can name sessions; you usually have to ask them to show
-                you.
-              </p>
-            </div>
-
-            <div class="card diff">
-              <h3>Archive instead of close</h3>
-              <p>
-                Finished with a session but not ready to lose it? Archive it. It
-                leaves the list, keeps its history, and comes back whenever you
-                want it. Closing a terminal tab is final. This is not.
-              </p>
-            </div>
-          </div>
-
-          <p class="note">
-            <b>And to be fair about the rest.</b> iTerm2 does far more than this
-            does. Ghostty is faster. A multiplexer like tmux goes places AuraMux
-            cannot, such as a server over SSH. If those are what you need, use
-            them, and so do I. AuraMux is for the narrower case of several
-            long-running sessions on one Mac that you would like to see at a
-            glance without setting anything up.
-          </p>
-        </div>
-      </section>
-      <!-- ---------------------------------------------------------------- -->
-      <section id="claude-code" aria-label="Claude Code notifications">
-        <div class="wrap">
-          <p class="eyebrow" data-n="03">Claude Code</p>
-          <div class="callout">
-            <h2>It will tell you when Claude Code needs an answer.</h2>
-            <p>
-              Claude Code rings the terminal bell when it finishes a task or
-              needs a decision. AuraMux turns that into a badge on the tab it
-              came from, so a session can be left running in another window while
-              you get on with something else.
-            </p>
-            <p>
-              Claude Code only enables that by itself in a handful of terminals,
-              which is why it often appears to do nothing at all. AuraMux offers
-              to set it up on first launch, with one click. It writes a single
-              key into <code>~/.claude/settings.json</code>, backs the file up
-              first, keeps every other setting exactly as it was, and will not
-              touch a file it cannot parse.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <!-- ---------------------------------------------------------------- -->
       <section id="features">
         <div class="wrap">
-          <p class="eyebrow" data-n="04">What it does</p>
-          <div class="grid three">
-            <div class="card">
-              <h3>Tabs</h3>
-              <ul>
-                <li>One tab per session, with no limit on how many</li>
-                <li>Double-click a tab to rename it</li>
-                <li>Current git branch, with a marker when the tree is dirty</li>
-                <li>Optional colour tag per tab</li>
-                <li>
-                  Open a folder from Finder, the Dock, or
-                  <code>open -a Aura &lt;folder&gt;</code>
-                </li>
-              </ul>
-            </div>
-
-            <div class="card">
-              <h3>Status badges</h3>
-              <ul>
-                <li>Amber bell on a session waiting for input</li>
-                <li>Cyan dot on a session with new output since you looked</li>
-                <li>
-                  Both shown in the sidebar, so checking never means switching
-                  tabs
-                </li>
-              </ul>
-            </div>
-
-            <div class="card">
-              <h3>Persistence</h3>
-              <ul>
-                <li>Autosaves every 20 seconds</li>
-                <li>Every session restored on launch</li>
-                <li>
-                  Archive the ones you are done with, then restore or delete them
-                  later
-                </li>
-              </ul>
-            </div>
-
-            <div class="card">
-              <h3>Split view</h3>
-              <ul>
-                <li>Two sessions side by side, two at a time</li>
-                <li>Draggable divider</li>
-                <li>Each pane keeps its own title and its own find</li>
-              </ul>
-            </div>
-
-            <div class="card">
-              <h3>Palette and utilities</h3>
-              <ul>
-                <li>Command palette to jump to a session or run a command</li>
-                <li>Find across 10,000 lines of scrollback per session</li>
-                <li>Screenshot to Desktop, kill and reset, daily update check</li>
-                <li>Write a review without leaving the app, from Help or the palette</li>
-                <li>
-                  Passcode lock or Touch ID. It gates the window only and does
-                  not encrypt stored sessions or scrollback.
-                </li>
-              </ul>
-            </div>
-
-            <div class="card">
-              <h3>Nothing watching you</h3>
-              <p>
-                No telemetry of any kind. No analytics, no crash reporting, no
-                account. The only network request AuraMux makes is checking once
-                a day whether a newer version exists.
-              </p>
-            </div>
-          </div>
+          <ul class="feature-list">
+            <li>One session per task, with its folder and git branch on the tab</li>
+            <li>A badge on any session that finishes or needs an answer</li>
+            <li>Claude Code notifications, set up for you on first launch</li>
+            <li>Every session restored after a restart, autosaved every 20 seconds</li>
+            <li>Archive a session without losing its history</li>
+            <li>Split view, two sessions side by side</li>
+            <li>Command palette, and find across 10,000 lines of scrollback</li>
+            <li>Seven themes, switchable live</li>
+            <li>Passcode lock or Touch ID on the window</li>
+            <li>Open a folder from Finder, the Dock, or <code>open -a Aura</code></li>
+            <li>Screenshot to Desktop, kill and reset, daily update check</li>
+            <li>No telemetry, no account, no sign-up</li>
+          </ul>
         </div>
       </section>
 
-      <!-- ---------------------------------------------------------------- -->
-      <section aria-label="Keyboard shortcuts and themes">
-        <div class="wrap">
-          <p class="eyebrow" data-n="05">Shortcuts</p>
-          <div class="keys">
-            <span class="key"><kbd>&#8984;T</kbd> New tab</span>
-            <span class="key"><kbd>&#8679;&#8984;O</kbd> New tab in folder</span>
-            <span class="key"><kbd>&#8984;K</kbd> Command palette</span>
-            <span class="key"><kbd>&#8984;F</kbd> Find in terminal</span>
-            <span class="key"><kbd>&#8679;&#8984;T</kbd> Terminal theme</span>
-            <span class="key"><kbd>&#8984;L</kbd> Lock now</span>
-          </div>
-
-          <p class="eyebrow" data-n="06" style="margin-top: 3rem">Themes</p>
-          <div class="themes">
-            <div class="theme">
-              <span class="sw" aria-hidden="true"
-                ><i style="background: #33ff99"></i
-                ><i style="background: #ff6b8b"></i
-                ><i style="background: #ffd479"></i
-                ><i style="background: #7fd7ff"></i
-                ><i style="background: #c792ea"></i
-                ><i style="background: #d3ece1"></i
-              ></span>
-              Aura <span class="tag">default</span>
-            </div>
-            <div class="theme">
-              <span class="sw" aria-hidden="true"
-                ><i style="background: #127a12"></i
-                ><i style="background: #c62828"></i
-                ><i style="background: #8a6d00"></i
-                ><i style="background: #007a8a"></i
-                ><i style="background: #8e24aa"></i
-                ><i style="background: #1a1a1a"></i
-              ></span>
-              Classic <span class="tag">light</span>
-            </div>
-            <div class="theme">
-              <span class="sw" aria-hidden="true"
-                ><i style="background: #50fa7b"></i
-                ><i style="background: #ff5555"></i
-                ><i style="background: #f1fa8c"></i
-                ><i style="background: #bd93f9"></i
-                ><i style="background: #ff79c6"></i
-                ><i style="background: #f8f8f2"></i
-              ></span>
-              Dracula
-            </div>
-            <div class="theme">
-              <span class="sw" aria-hidden="true"
-                ><i style="background: #a3be8c"></i
-                ><i style="background: #bf616a"></i
-                ><i style="background: #ebcb8b"></i
-                ><i style="background: #81a1c1"></i
-                ><i style="background: #b48ead"></i
-                ><i style="background: #d8dee9"></i
-              ></span>
-              Nord
-            </div>
-            <div class="theme">
-              <span class="sw" aria-hidden="true"
-                ><i style="background: #859900"></i
-                ><i style="background: #dc322f"></i
-                ><i style="background: #b58900"></i
-                ><i style="background: #268bd2"></i
-                ><i style="background: #d33682"></i
-                ><i style="background: #93a1a1"></i
-              ></span>
-              Solarized Dark
-            </div>
-            <div class="theme">
-              <span class="sw" aria-hidden="true"
-                ><i style="background: #009e73"></i
-                ><i style="background: #d55e00"></i
-                ><i style="background: #f0e442"></i
-                ><i style="background: #56b4e9"></i
-                ><i style="background: #cc79a7"></i
-                ><i style="background: #e8eaed"></i
-              ></span>
-              Colourblind-safe
-            </div>
-          </div>
-          <p class="after-install">
-            Seven in total, switchable live, with per-colour brightness.
-          </p>
-        </div>
-      </section>
-
-      <!-- ---------------------------------------------------------------- -->
-      <section aria-label="Installing and setup">
-        <div class="wrap">
-          <p class="eyebrow" data-n="07">After installing</p>
-
-          <dl class="trust" style="margin-bottom: 1.5rem">
-            <div>
-              <dt>Price</dt>
-              <dd>Free</dd>
-            </div>
-            <div>
-              <dt>Requires</dt>
-              <dd>macOS 14 or later</dd>
-            </div>
-            <div>
-              <dt>Build</dt>
-              <dd>Universal</dd>
-            </div>
-            <div>
-              <dt>Telemetry</dt>
-              <dd>None</dd>
-            </div>
-          </dl>
-
-          <div class="grid three">
-            <div class="card">
-              <h3>Full Disk Access</h3>
-              <p>
-                Every shell AuraMux spawns inherits its security context, so
-                without Full Disk Access macOS will prompt the first time any tab
-                touches Desktop, Documents, Downloads, or an external volume.
-                Granting it once quietens that for every tab. Use
-                <strong>Aura &rarr; Grant Full Disk Access&hellip;</strong>, which
-                opens the right System Settings pane, then add
-                <code>/Applications/Aura.app</code>.
-              </p>
-              <p class="small">
-                Entirely optional. You can also grant each folder as it is asked
-                for.
-              </p>
-            </div>
-
-            <div class="card">
-              <h3>What a first launch asks for</h3>
-              <p>
-                Nothing. AuraMux only reads and writes its own data in
-                <code>~/Library/Application Support/Aura</code> at startup.
-                Folder prompts appear only when a command you run reaches a
-                protected folder, exactly as they do in Apple's Terminal. No
-                keychain prompt unless you set a passcode.
-              </p>
-            </div>
-
-            <div class="card">
-              <h3>Why it installs as Aura</h3>
-              <p>
-                The app is AuraMux, but in your Applications folder and in the
-                menu bar it is still called Aura. That is deliberate, and it is
-                what keeps your passcode, your permissions and your settings
-                working across updates.
-              </p>
-              <p class="small">
-                Launch it with <code>open -a Aura</code>.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-
-      <!-- ---------------------------------------------------------------- -->
-      <section id="updating">
-        <div class="wrap">
-          <p class="eyebrow" data-n="08">Updating</p>
-
-          <ol class="steps">
-            <li>
-              <b>Paste the command into any terminal, including AuraMux itself</b>
-              It quits AuraMux for you, updates, and reopens it. There is no
-              separate updater to fetch and nothing to remember beyond the one
-              line you installed with.
-              <span class="cmd"
-                >curl -fsSL
-                https://github.com/rmehdee/auramux-releases/releases/latest/download/install.sh
-                | bash</span
-              >
-            </li>
-            <li>
-              <b>That is the whole thing</b>
-              AuraMux comes back on its own. If you would rather it did not
-              touch a running copy, set <code>AURA_NO_RESTART=1</code> and it
-              will ask you to quit first instead.
-            </li>
-          </ol>
-
-          <p class="note">
-            <b>The quit is a real quit, not a kill.</b> It goes through exactly
-            the same path as pressing ⌘Q, so every session and all your
-            scrollback are written to disk before the app closes. If it has not
-            shut down cleanly within thirty seconds the update stops rather than
-            overwrite a running app.
-          </p>
-
-          <p class="note">
-            <b>Nothing of yours is touched.</b> Sessions, scrollback, saved
-            themes, colour tags, your passcode and your Full Disk Access grant
-            all carry over, because they live outside the app bundle. You will
-            not be asked to grant permissions again or to set your passcode
-            again.
-          </p>
-
-          <p class="note">
-            <b>You do not have to watch for releases.</b> AuraMux checks once a
-            day and shows a banner when a newer build exists, and the banner
-            copies the command for you. <strong>Aura &rarr; Check for
-            Updates&hellip;</strong> forces a check if you would rather not wait.
-          </p>
-        </div>
-      </section>
-
-      <!-- ---------------------------------------------------------------- -->
       <section id="reviews">
         <div class="wrap">
-          <p class="eyebrow" data-n="09">Reviews</p>
+          <p class="eyebrow">Reviews</p>
 
           <!-- Everything between these markers is generated from GitHub
                Discussions by .github/workflows/sync-reviews.yml. Edit the
@@ -977,10 +628,10 @@
           </p>
         </div>
       </section>
-      <!-- ---------------------------------------------------------------- -->
+
       <section id="faq">
         <div class="wrap">
-          <p class="eyebrow" data-n="10">Questions</p>
+          <p class="eyebrow">Questions</p>
 
           <div class="faq">
             <details>
@@ -1037,11 +688,12 @@
                 selling something. iTerm2 is the most complete and has been for
                 years. Ghostty is the fastest. Terminal.app is already installed
                 and fine for most work. tmux is the one to learn if you need
-                sessions that survive on a server over SSH. AuraMux is worth
-                looking at for one specific situation: several long-running
+                sessions that survive on a server over SSH. cmux and Belay are
+                aimed at the same situation as AuraMux and are both worth a look.
+                AuraMux suits one case in particular: several long-running
                 sessions on one Mac, usually with AI coding agents in some of
-                them, where you need to see at a glance which one has finished
-                and which is waiting on you.
+                them, no configuration, and a glance telling you which one has
+                finished and which is waiting.
               </p>
             </details>
 
@@ -1082,6 +734,57 @@
                 not work over SSH. Like iTerm2 it is a native macOS terminal with
                 tabs, split view and themes; unlike iTerm2 it does far less, on
                 purpose. If you are happy with what you have, stay with it.
+              </p>
+            </details>
+
+            <details>
+              <summary>How do I update it?</summary>
+              <p class="ans">
+                Run the same command you installed with, in any terminal
+                including AuraMux itself. It quits the app for you through the
+                same path as Command Q, so sessions and scrollback are saved
+                first, then installs and reopens. Sessions, scrollback, themes,
+                colour tags, your passcode and your Full Disk Access grant all
+                carry over. If it has not shut down cleanly within thirty
+                seconds the update stops rather than overwrite a running app.
+                Set AURA_NO_RESTART=1 to be asked to quit manually instead.
+              </p>
+            </details>
+
+            <details>
+              <summary>Does it need Full Disk Access?</summary>
+              <p class="ans">
+                No, but it helps. Every shell AuraMux spawns inherits its
+                security context, so without it macOS prompts the first time any
+                session touches Desktop, Documents, Downloads or an external
+                volume. Granting it once quietens that everywhere. Use Aura,
+                Grant Full Disk Access, which opens the right System Settings
+                pane, then add /Applications/Aura.app.
+              </p>
+            </details>
+
+            <details>
+              <summary>What does it ask for on first launch?</summary>
+              <p class="ans">
+                Nothing. AuraMux only reads and writes its own data in
+                ~/Library/Application Support/Aura at startup. Folder prompts
+                appear only when a command you run reaches a protected folder,
+                exactly as they do in Apple's Terminal. There is no keychain
+                prompt unless you set a passcode.
+              </p>
+            </details>
+
+            <details>
+              <summary>What makes it different from the others?</summary>
+              <p class="ans">
+                It asks nothing of you. No config file, no prefix key, no plugin
+                manager, no sign-up. You install it and the session list is
+                already there with each session's name, folder, git branch and
+                state. The other piece is Claude Code: it only turns on bell
+                notifications by itself in a few terminals, so AuraMux offers to
+                set that up on first launch. If you have tried a terminal
+                multiplexer and given up somewhere in the setup, that is the
+                part worth knowing about.
               </p>
             </details>
             <details>
