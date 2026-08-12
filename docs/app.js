@@ -9,16 +9,18 @@
 (function () {
   "use strict";
 
-  /* ---------- copy the install command ---------- */
+  /* ---------- copy a command ---------- */
 
-  var button = document.getElementById("copy");
-  var command = document.querySelector(".install code");
-
-  if (button && command && navigator.clipboard) {
+  /*
+   * Shared by the install command in the hero and by any command inside the
+   * release notes, so they behave identically: same wording, same timings, same
+   * fallback when the clipboard is refused.
+   */
+  var attachCopy = function (button, source) {
     button.addEventListener("click", function () {
       // Strip the "$ " prompt, which is punctuation for the reader rather than
       // part of the command. Pasting it would break the line.
-      var text = command.textContent.replace(/^\s*\$\s*/, "").trim();
+      var text = source.textContent.replace(/^\s*\$\s*/, "").trim();
 
       navigator.clipboard.writeText(text).then(
         function () {
@@ -38,6 +40,13 @@
         },
       );
     });
+  };
+
+  var button = document.getElementById("copy");
+  var command = document.querySelector(".install code");
+
+  if (button && command && navigator.clipboard) {
+    attachCopy(button, command);
   } else if (button) {
     button.classList.add("hidden");
   }
@@ -349,14 +358,53 @@
   };
 
   /*
-   * Captured before anything is wired. Once wireTabs has run it has added roles
-   * and aria attributes, and the markup no longer looks like what a render
-   * produces, so it could never be compared against one.
+   * A Copy button beside any command in the notes, matching the one in the
+   * hero. Added here rather than written into the markup for the same reason
+   * the tab roles are: a Copy button is a promise, and without a script behind
+   * it there is nothing to press. Where the clipboard is unavailable none is
+   * added at all, and the command stays what it already was, selectable text.
+   */
+  var wireCopy = function () {
+    if (!navigator.clipboard) return;
+
+    var blocks = document.querySelectorAll(".rel-body pre");
+    Array.prototype.forEach.call(blocks, function (pre) {
+      // Wiring runs again whenever the section is replaced. Anything already
+      // sitting in a row has its button.
+      if (pre.parentNode.className === "rel-cmd") return;
+
+      var row = document.createElement("div");
+      row.className = "rel-cmd";
+      pre.parentNode.insertBefore(row, pre);
+      row.appendChild(pre);
+
+      var copy = document.createElement("button");
+      copy.type = "button";
+      copy.className = "copy";
+      copy.textContent = "Copy";
+      // So a screen reader hears the button confirm itself, rather than the
+      // confirmation being a visual change nobody is told about.
+      copy.setAttribute("aria-live", "polite");
+      row.appendChild(copy);
+
+      attachCopy(copy, pre.querySelector("code") || pre);
+    });
+  };
+
+  var wireSection = function () {
+    wireTabs();
+    wireCopy();
+  };
+
+  /*
+   * Captured before anything is wired. Wiring adds roles, aria attributes and a
+   * Copy button, and the markup no longer looks like what a render produces, so
+   * it could never be compared against one.
    */
   var section = document.getElementById("rel-tabs");
   var published = section ? section.outerHTML : "";
 
-  wireTabs();
+  wireSection();
 
   /* ---------- keep the page honest ---------- */
 
@@ -457,6 +505,6 @@
     section.replaceWith(fresh);
     section = fresh;
     published = fresh.outerHTML;
-    wireTabs();
+    wireSection();
   }
 })();

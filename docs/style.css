@@ -1820,10 +1820,33 @@ footer {
 }
 
 /*
- * A command inside the notes. Same treatment as the one in the hero, minus the
- * copy button beside it, so a long install line scrolls in its own box instead
- * of stretching the panel.
+ * A command inside the notes. Same treatment as the one in the hero, Copy
+ * button included, so a long install line scrolls in its own box instead of
+ * stretching the panel.
+ *
+ * The row is built by app.js, so these rules only ever apply once there is a
+ * button to lay out beside the block.
  */
+.rel-cmd {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+  margin: 0 0 0.9rem;
+  /*
+   * Wider than the 46rem the prose is held to. That measure is there to keep
+   * lines readable, which a command does not care about, and at 46rem the
+   * install line no longer fits once the button takes its share. This is the
+   * width that shows all of it rather than scrolling for no reason.
+   */
+  max-width: 52rem;
+}
+.rel-cmd pre {
+  flex: 1;
+  /* Without this the pre refuses to shrink below its content and pushes the
+     button off the end of the panel. */
+  min-width: 0;
+  margin: 0;
+}
 .rel-body pre {
   margin: 0 0 0.9rem;
   max-width: 46rem;
