@@ -42,54 +42,10 @@
     button.classList.add("hidden");
   }
 
-  /* ---------- keep the version honest ---------- */
-
   /*
-   * The markup ships with the current version so the page is never blank or
-   * wrong on first paint. This asks GitHub for the real latest release and
-   * corrects it if a newer one exists, which means cutting a release is the
-   * only step needed to update this page. GitHub's API sends CORS headers, so
-   * this works from the browser with no server involved.
-   *
-   * Unauthenticated requests are rate limited per IP. On a miss, the page keeps
-   * the version it shipped with rather than showing an error.
+   * The version and the release notes are both corrected from the GitHub API
+   * further down, in one request. See "keep the page honest".
    */
-  fetch("https://api.github.com/repos/rmehdee/auramux-releases/releases/latest")
-    .then(function (r) {
-      return r.ok ? r.json() : null;
-    })
-    .then(function (release) {
-      if (!release || !release.tag_name) return;
-
-      var version = String(release.tag_name).replace(/^v/, "");
-      if (!/^\d+\.\d+\.\d+$/.test(version)) return;
-
-      var pill = document.getElementById("version-pill");
-      var shown = "v" + version + " · beta";
-
-      // Nothing to do in the normal case. The published version is written
-      // into the markup on release, so this fetch usually confirms what is
-      // already on screen rather than replacing it. Writing anyway would
-      // repaint for no reason, and would turn any lag into a visible flicker.
-      if (!pill || pill.textContent === shown) return;
-
-      pill.textContent = shown;
-
-      // Keep the structured data in step with what is shown.
-      var ld = document.getElementById("ld-app");
-      if (ld) {
-        try {
-          var data = JSON.parse(ld.textContent);
-          data["@graph"][0].softwareVersion = version;
-          ld.textContent = JSON.stringify(data);
-        } catch (e) {
-          /* leave the published version in place */
-        }
-      }
-    })
-    .catch(function () {
-      /* offline, rate limited, or blocked. The shipped version stands. */
-    });
 
   /* ---------- install count ---------- */
 
@@ -301,89 +257,206 @@
   /* ---------- what's new, one release at a time ---------- */
 
   /*
-   * The notes for the last few releases are all in the HTML, written there when
-   * a release is published. Without this they read as a stacked changelog,
-   * which is correct but long. This turns them into a tab strip.
+   * The notes for the last few releases are in the HTML, written there when a
+   * release is published. Without this they read as a stacked changelog, which
+   * is correct but long. This turns them into a tab strip.
    *
    * The roles are added here rather than shipped in the markup on purpose. A
    * tablist that cannot be operated is worse for someone on a screen reader
    * than four plain headings, so the page only claims to be tabs once it can
    * actually behave like them.
+   *
+   * Written to be run more than once, because the section below replaces the
+   * whole section when GitHub has notes newer than the ones the page was
+   * served with. Replacing the markup throws away the old listeners with it.
    */
+  var wireTabs = function () {
+    var tablist = document.getElementById("rel-tablist");
+    var tabs = tablist
+      ? Array.prototype.slice.call(tablist.querySelectorAll(".rel-tab"))
+      : [];
 
-  var tablist = document.getElementById("rel-tablist");
-  var tabs = tablist
-    ? Array.prototype.slice.call(tablist.querySelectorAll(".rel-tab"))
-    : [];
+    if (tabs.length < 2) return;
 
-  if (tabs.length > 1) {
     var panels = tabs.map(function (tab) {
       return document.getElementById("rel-" + tab.getAttribute("data-rel"));
     });
 
     // If the markup and the script ever disagree, leave the stack alone.
-    if (panels.every(Boolean)) {
-      tablist.hidden = false;
-      tablist.setAttribute("role", "tablist");
+    if (!panels.every(Boolean)) return;
 
-      var select = function (index, moveFocus) {
-        tabs.forEach(function (tab, i) {
-          var on = i === index;
-          tab.setAttribute("aria-selected", on ? "true" : "false");
-          // Only the selected tab is in the tab order. Arrow keys move between
-          // them, which is how a tablist is expected to behave.
-          tab.tabIndex = on ? 0 : -1;
-          // Both, not just one. The stylesheet shows the first panel by default
-          // so there is something on screen before this runs, and it takes an
-          // explicit `is-open` to put a later release in front of that.
-          panels[i].classList.toggle("is-open", on);
-          panels[i].classList.toggle("is-closed", !on);
-        });
-        if (moveFocus) tabs[index].focus();
-      };
+    tablist.hidden = false;
+    tablist.setAttribute("role", "tablist");
 
+    var select = function (index, moveFocus) {
       tabs.forEach(function (tab, i) {
-        var panel = panels[i];
+        var on = i === index;
+        tab.setAttribute("aria-selected", on ? "true" : "false");
+        // Only the selected tab is in the tab order. Arrow keys move between
+        // them, which is how a tablist is expected to behave.
+        tab.tabIndex = on ? 0 : -1;
+        // Both, not just one. The stylesheet shows the first panel by default
+        // so there is something on screen before this runs, and it takes an
+        // explicit `is-open` to put a later release in front of that.
+        panels[i].classList.toggle("is-open", on);
+        panels[i].classList.toggle("is-closed", !on);
+      });
+      if (moveFocus) tabs[index].focus();
+    };
 
-        tab.id = tab.id || "rel-tab-" + tab.getAttribute("data-rel");
-        tab.setAttribute("role", "tab");
-        tab.setAttribute("aria-controls", panel.id);
+    tabs.forEach(function (tab, i) {
+      var panel = panels[i];
 
-        panel.setAttribute("role", "tabpanel");
-        panel.setAttribute("aria-labelledby", tab.id);
-        // So the notes can be scrolled and read by keyboard once a tab is
-        // chosen. The panel is a block of text, not a widget.
-        panel.tabIndex = 0;
+      tab.id = tab.id || "rel-tab-" + tab.getAttribute("data-rel");
+      tab.setAttribute("role", "tab");
+      tab.setAttribute("aria-controls", panel.id);
 
-        tab.addEventListener("click", function () {
-          select(i, false);
-        });
+      panel.setAttribute("role", "tabpanel");
+      panel.setAttribute("aria-labelledby", tab.id);
+      // So the notes can be scrolled and read by keyboard once a tab is
+      // chosen. The panel is a block of text, not a widget.
+      panel.tabIndex = 0;
 
-        tab.addEventListener("keydown", function (event) {
-          var step =
-            event.key === "ArrowRight" || event.key === "ArrowDown"
-              ? 1
-              : event.key === "ArrowLeft" || event.key === "ArrowUp"
-                ? -1
-                : 0;
-
-          if (step) {
-            event.preventDefault();
-            select((i + step + tabs.length) % tabs.length, true);
-            return;
-          }
-          if (event.key === "Home") {
-            event.preventDefault();
-            select(0, true);
-          }
-          if (event.key === "End") {
-            event.preventDefault();
-            select(tabs.length - 1, true);
-          }
-        });
+      tab.addEventListener("click", function () {
+        select(i, false);
       });
 
-      select(0, false);
+      tab.addEventListener("keydown", function (event) {
+        var step =
+          event.key === "ArrowRight" || event.key === "ArrowDown"
+            ? 1
+            : event.key === "ArrowLeft" || event.key === "ArrowUp"
+              ? -1
+              : 0;
+
+        if (step) {
+          event.preventDefault();
+          select((i + step + tabs.length) % tabs.length, true);
+          return;
+        }
+        if (event.key === "Home") {
+          event.preventDefault();
+          select(0, true);
+        }
+        if (event.key === "End") {
+          event.preventDefault();
+          select(tabs.length - 1, true);
+        }
+      });
+    });
+
+    select(0, false);
+  };
+
+  /*
+   * Captured before anything is wired. Once wireTabs has run it has added roles
+   * and aria attributes, and the markup no longer looks like what a render
+   * produces, so it could never be compared against one.
+   */
+  var section = document.getElementById("rel-tabs");
+  var published = section ? section.outerHTML : "";
+
+  wireTabs();
+
+  /* ---------- keep the page honest ---------- */
+
+  /*
+   * The markup ships with the current version and the current notes, so the
+   * page is complete and right on first paint, and right for anything that
+   * does not run scripts. This asks GitHub what the releases actually are and
+   * corrects both if they have moved on.
+   *
+   * It is needed because GitHub Pages serves this page with max-age=600. For up
+   * to ten minutes after a release, a visitor is handed the previous HTML from
+   * a CDN that has not expired it yet. The version pill has always corrected
+   * itself this way. Until the notes did too, the pill would say 1.7.0 directly
+   * above a panel still describing 1.6.1.
+   *
+   * One request answers both. GitHub's API sends CORS headers, so this works
+   * from the browser with no server involved. Unauthenticated requests are rate
+   * limited per IP; on a miss the page keeps what it was published with rather
+   * than showing an error.
+   */
+  fetch("https://api.github.com/repos/rmehdee/auramux-releases/releases?per_page=30")
+    .then(function (r) {
+      return r.ok ? r.json() : null;
+    })
+    .then(function (list) {
+      if (!list || !list.length) return null;
+
+      /*
+       * The pill first, and deliberately without the module. It is one short
+       * string, it has been corrected this way since long before the notes
+       * were, and it should not start depending on a second file loading.
+       */
+      var newest = list
+        .filter(function (r) {
+          return (
+            !r.draft &&
+            !r.prerelease &&
+            /^v?\d+\.\d+\.\d+$/.test(r.tag_name || "")
+          );
+        })
+        .sort(function (a, b) {
+          return new Date(b.published_at) - new Date(a.published_at);
+        })[0];
+
+      if (newest) showVersion(String(newest.tag_name).replace(/^v/, ""));
+
+      // The renderer Actions uses, so what is drawn here is what would have
+      // been published. A failure to load it leaves the published notes alone.
+      return import("/release-notes.mjs?v=43306e3f").then(function (notes) {
+        var releases = notes.pickReleases(list);
+        if (releases.length) showNotes(notes.renderSection(releases));
+      });
+    })
+    .catch(function () {
+      /* offline, rate limited, or blocked. What was published stands. */
+    });
+
+  function showVersion(version) {
+    var pill = document.getElementById("version-pill");
+    var shown = "v" + version + " \u00b7 beta";
+
+    // Nothing to do in the normal case. The published version is written into
+    // the markup on release, so this usually confirms what is already on screen
+    // rather than replacing it. Writing anyway would repaint for no reason, and
+    // would turn any lag into a visible flicker.
+    if (!pill || pill.textContent === shown) return;
+
+    pill.textContent = shown;
+
+    // Keep the structured data in step with what is shown.
+    var ld = document.getElementById("ld-app");
+    if (!ld) return;
+    try {
+      var data = JSON.parse(ld.textContent);
+      data["@graph"][0].softwareVersion = version;
+      ld.textContent = JSON.stringify(data);
+    } catch (e) {
+      /* leave the published version in place */
     }
+  }
+
+  function showNotes(markup) {
+    if (!section || !markup) return;
+
+    var probe = document.createElement("div");
+    probe.innerHTML = markup;
+    var fresh = probe.firstElementChild;
+    if (!fresh) return;
+
+    /*
+     * Both sides of this comparison have been through the browser's parser, so
+     * they are normalised the same way and can be compared as strings. In the
+     * ordinary case they are identical, which is the answer we want: leave the
+     * section exactly as it was served, listeners and chosen tab included.
+     */
+    if (fresh.outerHTML === published) return;
+
+    section.replaceWith(fresh);
+    section = fresh;
+    published = fresh.outerHTML;
+    wireTabs();
   }
 })();
