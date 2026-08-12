@@ -82,7 +82,7 @@
             "applicationCategory": "DeveloperApplication",
             "applicationSubCategory": "Terminal emulator",
             "operatingSystem": "macOS 14 (Sonoma) or later",
-            "softwareVersion": "1.7.0",
+            "softwareVersion": "1.7.1",
             "softwareRequirements": "macOS 14 (Sonoma) or later",
             "processorRequirements": "Apple Silicon or Intel, universal build",
             "downloadUrl": "https://github.com/rmehdee/auramux-releases/releases",
@@ -313,7 +313,7 @@
           />
           AuraMux
         </a>
-        <span class="pill" id="version-pill">v1.7.0 &middot; beta</span>
+        <span class="pill" id="version-pill">v1.7.1 &middot; beta</span>
         <span class="spacer"></span>
         <a class="quiet hide-xs" href="#features">Features</a>
         <a class="quiet hide-sm" href="#whats-new">What&rsquo;s new</a>
@@ -618,11 +618,33 @@
           <!-- whats-new:start -->
       <div class="rel-tabs" id="rel-tabs">
         <div class="rel-tablist" id="rel-tablist" aria-label="Releases" hidden>
+          <button class="rel-tab" type="button" data-rel="1-7-1">1.7.1</button>
           <button class="rel-tab" type="button" data-rel="1-7-0">1.7.0</button>
           <button class="rel-tab" type="button" data-rel="1-6-1">1.6.1</button>
           <button class="rel-tab" type="button" data-rel="1-6-0">1.6.0</button>
-          <button class="rel-tab" type="button" data-rel="1-5-7">1.5.7</button>
         </div>
+
+        <article class="rel" id="rel-1-7-1">
+          <h3 class="rel-v">1.7.1</h3>
+          <p class="rel-meta">
+            <time datetime="2026-08-12">12 August 2026</time>
+          </p>
+
+          <div class="rel-body">
+              <h4>Bug fix</h4>
+              <p><strong>A tab now shows the folder you moved to.</strong> Running <code>cd</code> somewhere left the sidebar showing the previous path until unrelated output happened along.</p>
+              <p>The tracking added in 1.6.0 was working, but the signal driving it was discarded at the wrong moment. Output was sampled only at the start of a burst, and typing a command and pressing Enter is a single burst, so the folder was read before the shell had changed it and the result printed afterwards was skipped. It behaved correctly when typing slowly and failed at normal speed.</p>
+              <p>Output is now sampled at the end of a burst as well, so what gets read is where you ended up. A tab also refreshes when you select it, and every session is checked on the periodic save, so a missed signal cannot leave a tab showing the wrong folder.</p>
+              <p>The git branch shown beside the path follows the same corrected value.</p>
+              <p>Update by pasting this into any terminal, including an AuraMux tab:</p>
+          </div>
+
+          <p class="rel-more">
+            <a href="https://github.com/rmehdee/auramux-releases/releases/tag/v1.7.1" target="_blank" rel="noopener"
+              >All of the 1.7.1 notes on GitHub &rarr;</a
+            >
+          </p>
+        </article>
 
         <article class="rel" id="rel-1-7-0">
           <h3 class="rel-v">1.7.0</h3>
@@ -698,28 +720,6 @@
           <p class="rel-more">
             <a href="https://github.com/rmehdee/auramux-releases/releases/tag/v1.6.0" target="_blank" rel="noopener"
               >All of the 1.6.0 notes on GitHub &rarr;</a
-            >
-          </p>
-        </article>
-
-        <article class="rel" id="rel-1-5-7">
-          <h3 class="rel-v">1.5.7</h3>
-          <p class="rel-meta">
-            <time datetime="2026-08-09">9 August 2026</time>
-          </p>
-
-          <div class="rel-body">
-              <h4>Pin a tab to the top</h4>
-              <p>Right-click any session and choose <strong>Pin to Top</strong>. Pinned sessions sort above the rest and stay there, with a small pin marker showing why. Unpinning drops a session back exactly where it was.</p>
-              <h4>A tighter, cleaner sidebar edge</h4>
-              <p>The space between the sidebar and the start of your terminal text was a wide inset that, over bright content behind the window, was painted slightly differently from the terminal itself and showed up as a thick pale band. It is now a deliberate 3pt gap, painted identically to the terminal at every transparency setting. The divider itself is a true hairline.</p>
-              <h4>Included from 1.5.5 — scrollback data-loss fix</h4>
-              <p>A tab that started a shell and went straight into a full-screen tool (Claude Code, vim, less) could overwrite its saved history with an almost-empty capture. AuraMux now refuses any save that would discard the bulk of existing history. This affected 1.5.1 through 1.5.4.</p>
-          </div>
-
-          <p class="rel-more">
-            <a href="https://github.com/rmehdee/auramux-releases/releases/tag/v1.5.7" target="_blank" rel="noopener"
-              >All of the 1.5.7 notes on GitHub &rarr;</a
             >
           </p>
         </article>
