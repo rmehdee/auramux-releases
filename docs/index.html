@@ -82,7 +82,7 @@
             "applicationCategory": "DeveloperApplication",
             "applicationSubCategory": "Terminal emulator",
             "operatingSystem": "macOS 14 (Sonoma) or later",
-            "softwareVersion": "1.6.1",
+            "softwareVersion": "1.7.0",
             "softwareRequirements": "macOS 14 (Sonoma) or later",
             "processorRequirements": "Apple Silicon or Intel, universal build",
             "downloadUrl": "https://github.com/rmehdee/auramux-releases/releases",
@@ -313,7 +313,7 @@
           />
           AuraMux
         </a>
-        <span class="pill" id="version-pill">v1.6.1 &middot; beta</span>
+        <span class="pill" id="version-pill">v1.7.0 &middot; beta</span>
         <span class="spacer"></span>
         <a class="quiet hide-xs" href="#features">Features</a>
         <a class="quiet hide-sm" href="#whats-new">What&rsquo;s new</a>
@@ -617,11 +617,36 @@
                script, not this. -->
           <!-- whats-new:start -->
         <div class="rel-tablist" id="rel-tablist" aria-label="Releases" hidden>
+          <button class="rel-tab" type="button" data-rel="1-7-0">1.7.0</button>
           <button class="rel-tab" type="button" data-rel="1-6-1">1.6.1</button>
           <button class="rel-tab" type="button" data-rel="1-6-0">1.6.0</button>
           <button class="rel-tab" type="button" data-rel="1-5-7">1.5.7</button>
-          <button class="rel-tab" type="button" data-rel="1-5-6">1.5.6</button>
         </div>
+
+        <article class="rel" id="rel-1-7-0">
+          <h3 class="rel-v">1.7.0</h3>
+          <p class="rel-meta">
+            <time datetime="2026-08-12">12 August 2026</time>
+          </p>
+
+          <div class="rel-body">
+              <h4>Remote View</h4>
+              <p>Watch a session running on another Mac on the same network.</p>
+              <p>Turn on <strong>Remote</strong> in the sidebar of the Mac you want to watch. On your own Mac it appears under Remote. Click it, and a six digit code shows. Type that code on the other Mac to approve, and its sessions appear in your sidebar.</p>
+              <p><strong>View only.</strong> You can read output and scroll back. You cannot type, and you cannot start, close or rename anything over the connection.</p>
+              <p><strong>Nothing is shared until someone approves it.</strong> The code is shown on the asking Mac and never sent over the network, so approving requires seeing that screen. The approval prompt names the person, device, model and versions, and warns that anything visible in a session becomes readable, including keys and passwords.</p>
+              <p><strong>The watched Mac always shows it.</strong> A strip names who is viewing, with a one click disconnect.</p>
+              <p><strong>Reconnects on its own</strong> after sleep, a wifi drop or a network change, and returns you to the session you were watching. Approval never survives either app quitting, so a fresh code is needed after that.</p>
+              <p>Local network only. No accounts, no servers, nothing to pay for. Off until you turn it on.</p>
+              <p>macOS will ask for local network permission the first time. Discovery will not work without it.</p>
+          </div>
+
+          <p class="rel-more">
+            <a href="https://github.com/rmehdee/auramux-releases/releases/tag/v1.7.0" target="_blank" rel="noopener"
+              >All of the 1.7.0 notes on GitHub &rarr;</a
+            >
+          </p>
+        </article>
 
         <article class="rel" id="rel-1-6-1">
           <h3 class="rel-v">1.6.1</h3>
@@ -694,25 +719,6 @@
           <p class="rel-more">
             <a href="https://github.com/rmehdee/auramux-releases/releases/tag/v1.5.7" target="_blank" rel="noopener"
               >All of the 1.5.7 notes on GitHub &rarr;</a
-            >
-          </p>
-        </article>
-
-        <article class="rel" id="rel-1-5-6">
-          <h3 class="rel-v">1.5.6</h3>
-          <p class="rel-meta">
-            <time datetime="2026-08-09">9 August 2026</time>
-          </p>
-
-          <div class="rel-body">
-              <h4>A sleeker sidebar edge</h4>
-              <p>The divider between the sidebar and the terminal was drawing as a bright, heavy stripe. It is now a true hairline — one physical pixel, at a much lower contrast — so the boundary still reads clearly without dominating the window.</p>
-              <p>The draggable divider in split view is deliberately left as visible as before: it is a control you need to find and grab, not a structural edge.</p>
-          </div>
-
-          <p class="rel-more">
-            <a href="https://github.com/rmehdee/auramux-releases/releases/tag/v1.5.6" target="_blank" rel="noopener"
-              >All of the 1.5.6 notes on GitHub &rarr;</a
             >
           </p>
         </article>
