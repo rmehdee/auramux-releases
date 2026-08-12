@@ -106,11 +106,9 @@ const inline = (text) => {
 };
 
 /*
- * Release bodies are headings, paragraphs and bullet lists. That is the whole
- * grammar, and anything richer would be a sign the notes are trying to do too
- * much. Fenced code is dropped rather than rendered: the only thing ever fenced
- * in these notes is the install command, which is already at the top of the
- * page in a form you can copy.
+ * Release bodies are headings, paragraphs, bullet lists and fenced code. That
+ * is the whole grammar, and anything richer would be a sign the notes are
+ * trying to do too much.
  */
 const blocksOf = (body) => {
   const lines = String(body).replace(/\r/g, "").split("\n");
@@ -118,7 +116,7 @@ const blocksOf = (body) => {
 
   let paragraph = [];
   let list = null;
-  let fenced = false;
+  let fence = null;
 
   const endParagraph = () => {
     if (paragraph.length) blocks.push({ type: "p", text: paragraph.join(" ") });
@@ -135,11 +133,23 @@ const blocksOf = (body) => {
 
   for (const line of lines) {
     if (/^\s*```/.test(line)) {
-      fenced = !fenced;
-      endBoth();
+      if (fence) {
+        blocks.push({ type: "pre", text: fence.join("\n") });
+        fence = null;
+      } else {
+        endBoth();
+        // The opening line may carry a language hint. Nothing here highlights,
+        // so it is the fence itself that matters, not what it claims to be.
+        fence = [];
+      }
       continue;
     }
-    if (fenced) continue;
+    // Every line inside the fence is content, including the blank ones and
+    // anything that would otherwise look like a heading or a bullet.
+    if (fence) {
+      fence.push(line);
+      continue;
+    }
 
     if (!line.trim()) {
       endBoth();
@@ -170,22 +180,26 @@ const blocksOf = (body) => {
     paragraph.push(line.trim());
   }
 
+  // A fence nobody closed. Keep what is in it rather than losing the block.
+  if (fence && fence.length) blocks.push({ type: "pre", text: fence.join("\n") });
+
   endBoth();
   return blocks;
 };
 
 /*
- * Two things in the notes are for somebody reading them on GitHub and would be
- * noise here: the heading that repeats what this section is already called, and
- * the sign-off telling you how to update, which the hero says better.
+ * One thing in the notes is for somebody reading them on GitHub and is noise
+ * here: the heading that repeats what this section is already called.
+ *
+ * There used to be two more rules, dropping the sign-off that tells you how to
+ * update and the command under it. Both matched on how the sentence happened to
+ * be worded, so rewording the notes silently broke them: 1.7.1 said "Update by
+ * pasting this into any terminal:" where 1.6.0 had said "Update — paste into
+ * any terminal:", and the page kept the sentence while still dropping the
+ * command it introduced. A colon pointing at nothing. The command is rendered
+ * now, which is both more useful and one less thing to get wrong.
  */
-const isRedundant = (block) => {
-  if (block.type === "h") return /^what'?s new$/i.test(block.text);
-  if (block.type === "p") {
-    return /^update\s*[—–-]/i.test(block.text) || /install\.sh/.test(block.text);
-  }
-  return false;
-};
+const isRedundant = (block) => block.type === "h" && /^what'?s new$/i.test(block.text);
 
 const renderBody = (body) => {
   const all = blocksOf(body).filter((b) => !isRedundant(b));
@@ -196,6 +210,10 @@ const renderBody = (body) => {
     .map((block) => {
       if (block.type === "h") {
         return `              <h4>${inline(block.text)}</h4>`;
+      }
+      if (block.type === "pre") {
+        // esc, not inline. Everything in here is meant literally.
+        return `              <pre><code>${esc(block.text)}</code></pre>`;
       }
       if (block.type === "ul") {
         return `              <ul>\n${block.items

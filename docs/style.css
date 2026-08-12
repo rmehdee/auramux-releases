@@ -1818,3 +1818,30 @@ footer {
   padding-top: 0;
   border-top: 0;
 }
+
+/*
+ * A command inside the notes. Same treatment as the one in the hero, minus the
+ * copy button beside it, so a long install line scrolls in its own box instead
+ * of stretching the panel.
+ */
+.rel-body pre {
+  margin: 0 0 0.9rem;
+  max-width: 46rem;
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--fg);
+}
+/* The inline-code pill would otherwise put a second background and a second
+   border inside the block. */
+.rel-body pre code {
+  font-family: var(--mono);
+  background: none;
+  border-radius: 0;
+  padding: 0;
+  white-space: pre;
+}

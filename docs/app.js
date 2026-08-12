@@ -405,7 +405,7 @@
 
       // The renderer Actions uses, so what is drawn here is what would have
       // been published. A failure to load it leaves the published notes alone.
-      return import("/release-notes.mjs?v=43306e3f").then(function (notes) {
+      return import("/release-notes.mjs?v=943e5d19").then(function (notes) {
         var releases = notes.pickReleases(list);
         if (releases.length) showNotes(notes.renderSection(releases));
       });
