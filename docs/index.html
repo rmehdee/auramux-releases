@@ -56,9 +56,20 @@
     />
     <meta name="twitter:image" content="https://auramux.com/og.png" />
 
+    <!--
+      favicon.ico first, and it has to exist at the root. Google falls back to
+      /favicon.ico when it builds the icon beside a search result, and a 404
+      there is the usual reason a site shows a blank square in results.
+
+      The PNGs Google is offered are 96 and 192, because it wants a square that
+      is a multiple of 48. Every size this page declared before was 16, 32, 180
+      or 512, none of which qualifies. The small ones stay for browser tabs.
+    -->
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/icon-96.png" sizes="96x96" type="image/png" />
+    <link rel="icon" href="/icon-192.png" sizes="192x192" type="image/png" />
     <link rel="icon" href="/icon-32.png" sizes="32x32" type="image/png" />
     <link rel="icon" href="/icon-16.png" sizes="16x16" type="image/png" />
-    <link rel="icon" href="/icon-512.png" sizes="512x512" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <link rel="stylesheet" href="/style.css?v=0a6d8ad3" />
 
