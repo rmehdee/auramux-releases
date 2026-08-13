@@ -91,7 +91,7 @@ AuraMux is in beta and built after hours, so nothing here carries a date. Roughl
 in order of priority:
 
 **Persistent sessions.** Today a tab restores its folder and its scrollback, but
-the programs inside it stop when the app quits — the shell runs as a child of the
+the programs inside it stop when the app quits. The shell runs as a child of the
 application, which is true of every terminal emulator. The goal is genuine detach
 and reattach, so a long build or a running agent survives a restart rather than
 just its output being replayed. The likely route is opt-in `tmux` integration
@@ -111,7 +111,7 @@ same treatment for other CLIs as the patterns become clear.
 
 ### Not planned
 
-macOS only — no Windows or Linux build. No plugin system, no scripting API, and
+macOS only, with no Windows or Linux build. No plugin system, no scripting API, and
 no AI built into the terminal itself. AuraMux is a place to run those tools well,
 not another one of them.
 
