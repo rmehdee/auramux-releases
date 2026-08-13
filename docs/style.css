@@ -854,6 +854,21 @@ footer .who {
   margin-top: 1.25rem;
   color: var(--faint);
 }
+/*
+ * Sits under the authorship line and reads at the same weight as it, quietly.
+ * The names are a step brighter than the sentence around them so they are the
+ * part you actually take away from it.
+ */
+footer .credits {
+  width: 100%;
+  margin: 0.6rem 0 0;
+  color: var(--faint);
+}
+footer .credits .name {
+  color: var(--dim);
+  /* A person's name is one thing. Never break it across two lines. */
+  white-space: nowrap;
+}
 
 .hidden {
   display: none !important;
