@@ -82,7 +82,7 @@
             "applicationCategory": "DeveloperApplication",
             "applicationSubCategory": "Terminal emulator",
             "operatingSystem": "macOS 14 (Sonoma) or later",
-            "softwareVersion": "1.7.2",
+            "softwareVersion": "1.7.3",
             "softwareRequirements": "macOS 14 (Sonoma) or later",
             "processorRequirements": "Apple Silicon or Intel, universal build",
             "downloadUrl": "https://github.com/rmehdee/auramux-releases/releases",
@@ -313,7 +313,7 @@
           />
           AuraMux
         </a>
-        <span class="pill" id="version-pill">v1.7.2 &middot; beta</span>
+        <span class="pill" id="version-pill">v1.7.3 &middot; beta</span>
         <span class="spacer"></span>
         <a class="quiet hide-xs" href="#features">Features</a>
         <a class="quiet hide-sm" href="#whats-new">What&rsquo;s new</a>
@@ -618,11 +618,35 @@
           <!-- whats-new:start -->
       <div class="rel-tabs" id="rel-tabs">
         <div class="rel-tablist" id="rel-tablist" aria-label="Releases" hidden>
+          <button class="rel-tab" type="button" data-rel="1-7-3">1.7.3</button>
           <button class="rel-tab" type="button" data-rel="1-7-2">1.7.2</button>
           <button class="rel-tab" type="button" data-rel="1-7-1">1.7.1</button>
           <button class="rel-tab" type="button" data-rel="1-7-0">1.7.0</button>
-          <button class="rel-tab" type="button" data-rel="1-6-1">1.6.1</button>
         </div>
+
+        <article class="rel" id="rel-1-7-3">
+          <h3 class="rel-v">1.7.3</h3>
+          <p class="rel-meta">
+            <time datetime="2026-08-13">13 August 2026</time>
+          </p>
+
+          <div class="rel-body">
+              <h4>Bug fix</h4>
+              <p><strong>Your own tabs stayed unreachable while viewing a remote session.</strong> Clicking them did nothing, and the only way back was to disconnect.</p>
+              <p>Clicking any local tab now brings it straight back. The connection stays up and the remote sessions stay in the sidebar, so returning to what you were watching is one click. Disconnect now only ends the connection.</p>
+              <h4>Also</h4>
+              <p>The sharing switch is clearer: <strong>Discoverable</strong>, with a <strong>Local network only</strong> caption, and it uses your theme colour instead of the system blue.</p>
+              <p>The remote session you are viewing is marked in the sidebar, so it matches what is on screen.</p>
+              <p>Update by pasting this into any terminal, including an AuraMux tab:</p>
+              <pre><code>curl -fsSL https://github.com/rmehdee/auramux-releases/releases/latest/download/install.sh | bash</code></pre>
+          </div>
+
+          <p class="rel-more">
+            <a href="https://github.com/rmehdee/auramux-releases/releases/tag/v1.7.3" target="_blank" rel="noopener"
+              >All of the 1.7.3 notes on GitHub &rarr;</a
+            >
+          </p>
+        </article>
 
         <article class="rel" id="rel-1-7-2">
           <h3 class="rel-v">1.7.2</h3>
@@ -691,30 +715,6 @@
           <p class="rel-more">
             <a href="https://github.com/rmehdee/auramux-releases/releases/tag/v1.7.0" target="_blank" rel="noopener"
               >All of the 1.7.0 notes on GitHub &rarr;</a
-            >
-          </p>
-        </article>
-
-        <article class="rel" id="rel-1-6-1">
-          <h3 class="rel-v">1.6.1</h3>
-          <p class="rel-meta">
-            <time datetime="2026-08-10">10 August 2026</time>
-          </p>
-
-          <div class="rel-body">
-              <h4>Bug fix</h4>
-              <p><strong>Banners could be unreadable.</strong> The notification setup and update banners painted only a faint colour tint with no background of their own, and the window behind them is translucent so the blur can reach your terminal. That meant a banner picked up whatever was behind the app: over a light window it washed out to near white and its text disappeared into it.</p>
-              <p>Both banners now paint a solid background of their own, and take their text and divider colours from the theme you have selected, so they stay readable whatever is behind the window and on light themes as well as dark ones.</p>
-              <p>If you saw a message you could not read at the top of the window, it was most likely this one, confirming that Claude Code setup had been applied:</p>
-              <p>&gt; Done. Restart Claude Code in your open tabs (/exit, then claude) to apply it.</p>
-              <p>Nothing was wrong on your side. Running <code>/exit</code> and then <code>claude</code> in your open tabs applies it.</p>
-              <p>Update by pasting this into any terminal, including an AuraMux tab:</p>
-              <pre><code>curl -fsSL https://github.com/rmehdee/auramux-releases/releases/latest/download/install.sh | bash</code></pre>
-          </div>
-
-          <p class="rel-more">
-            <a href="https://github.com/rmehdee/auramux-releases/releases/tag/v1.6.1" target="_blank" rel="noopener"
-              >All of the 1.6.1 notes on GitHub &rarr;</a
             >
           </p>
         </article>
