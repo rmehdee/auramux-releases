@@ -75,6 +75,16 @@ installs, and reopens it.
 Sessions, scrollback, saved themes, your passcode and your Full Disk Access grant
 all carry over untouched.
 
+### If macOS asks about modifying other applications
+
+On macOS 15 and later, updating from inside an AuraMux tab prompts once to allow AuraMux to "modify
+other applications". That is the update replacing `Aura.app`, and macOS credits it to whichever app
+owns the shell you typed the command into. It takes effect after AuraMux reopens, so answering later
+does not interrupt the update in progress.
+
+The permission is broad: it covers any application, not only AuraMux. Running the update command in
+**Terminal** instead avoids it entirely.
+
 ## Roadmap
 
 AuraMux is in beta and built after hours, so nothing here carries a date. Roughly
