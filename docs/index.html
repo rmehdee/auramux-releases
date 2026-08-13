@@ -82,7 +82,7 @@
             "applicationCategory": "DeveloperApplication",
             "applicationSubCategory": "Terminal emulator",
             "operatingSystem": "macOS 14 (Sonoma) or later",
-            "softwareVersion": "1.7.1",
+            "softwareVersion": "1.7.2",
             "softwareRequirements": "macOS 14 (Sonoma) or later",
             "processorRequirements": "Apple Silicon or Intel, universal build",
             "downloadUrl": "https://github.com/rmehdee/auramux-releases/releases",
@@ -313,7 +313,7 @@
           />
           AuraMux
         </a>
-        <span class="pill" id="version-pill">v1.7.1 &middot; beta</span>
+        <span class="pill" id="version-pill">v1.7.2 &middot; beta</span>
         <span class="spacer"></span>
         <a class="quiet hide-xs" href="#features">Features</a>
         <a class="quiet hide-sm" href="#whats-new">What&rsquo;s new</a>
@@ -618,11 +618,34 @@
           <!-- whats-new:start -->
       <div class="rel-tabs" id="rel-tabs">
         <div class="rel-tablist" id="rel-tablist" aria-label="Releases" hidden>
+          <button class="rel-tab" type="button" data-rel="1-7-2">1.7.2</button>
           <button class="rel-tab" type="button" data-rel="1-7-1">1.7.1</button>
           <button class="rel-tab" type="button" data-rel="1-7-0">1.7.0</button>
           <button class="rel-tab" type="button" data-rel="1-6-1">1.6.1</button>
-          <button class="rel-tab" type="button" data-rel="1-6-0">1.6.0</button>
         </div>
+
+        <article class="rel" id="rel-1-7-2">
+          <h3 class="rel-v">1.7.2</h3>
+          <p class="rel-meta">
+            <time datetime="2026-08-13">13 August 2026</time>
+          </p>
+
+          <div class="rel-body">
+              <h4>Bug fix</h4>
+              <p><strong>Remote View could freeze the app on the watching Mac.</strong> Opening a session with a long scrollback would connect, then hang, needing a force quit.</p>
+              <p>Nothing limited how much text was sent. The whole scrollback went across on the first watch, up to ten thousand lines, and the watching Mac kept appending every update into a single text view without any cap. On a busy session that was enough to lock the interface.</p>
+              <p>Watching now works on the last 1000 lines, refreshed once a second and only when something has actually changed. Your full history stays on the machine being watched. A long running session now costs the same to watch as one just started.</p>
+              <p>Output also renders line by line, so only what is on screen is laid out, and scrolling no longer fights you: it follows new output until you scroll up to read, with a Latest button to resume following. Use the copy button in the header to take the visible output.</p>
+              <p>Update by pasting this into any terminal, including an AuraMux tab:</p>
+              <pre><code>curl -fsSL https://github.com/rmehdee/auramux-releases/releases/latest/download/install.sh | bash</code></pre>
+          </div>
+
+          <p class="rel-more">
+            <a href="https://github.com/rmehdee/auramux-releases/releases/tag/v1.7.2" target="_blank" rel="noopener"
+              >All of the 1.7.2 notes on GitHub &rarr;</a
+            >
+          </p>
+        </article>
 
         <article class="rel" id="rel-1-7-1">
           <h3 class="rel-v">1.7.1</h3>
@@ -692,37 +715,6 @@
           <p class="rel-more">
             <a href="https://github.com/rmehdee/auramux-releases/releases/tag/v1.6.1" target="_blank" rel="noopener"
               >All of the 1.6.1 notes on GitHub &rarr;</a
-            >
-          </p>
-        </article>
-
-        <article class="rel" id="rel-1-6-0">
-          <h3 class="rel-v">1.6.0</h3>
-          <p class="rel-meta">
-            <time datetime="2026-08-10">10 August 2026</time>
-          </p>
-
-          <div class="rel-body">
-              <p><strong>The sidebar follows your theme.</strong> Switch terminal themes and the sidebar comes with it: surface, text, dividers and status colours are all derived from the theme you picked. Classic, the light theme, no longer pairs a white terminal with a near-black sidebar.</p>
-              <p><strong>Drag tabs to reorder them.</strong> Grab a session and move it anywhere in the list, with a line showing where it will land. Drop one into the pinned group to pin it, or drag it to the bottom to unpin.</p>
-              <p><strong>Pin a tab to the top.</strong> Right-click a session and choose Pin to Top. Pinned sessions stay above the rest with a small pin marker.</p>
-              <p><strong>See what needs you, without switching tabs.</strong> The Dock icon now carries a count of sessions waiting for input, and the status bar shows the same number. The bell on a waiting session is larger, so it no longer reads as just another dot.</p>
-              <p><strong>Tabs track the folder you're in.</strong> A tab opened without a folder used to show your home directory forever, even after you <code>cd</code>'d somewhere. It now follows the shell, so the path and the git branch both update.</p>
-              <h4>Fixes</h4>
-              <ul>
-                <li>Session history is captured even while a full-screen tool (Claude Code, vim, less) is running, and a nearly-empty capture can no longer replace a large one.</li>
-                <li>The gap between the sidebar and your terminal text no longer shows as a pale band over bright windows behind it.</li>
-                <li>Updating from inside an AuraMux tab now works. The installer quits the app for you, updates, and reopens it.</li>
-              </ul>
-              <h4>Note on the Dock badge</h4>
-              <p>macOS only shows badges for apps that asked permission to use them. If you have used a previous build, enable <strong>Badges</strong> under System Settings, Notifications, Aura. New installs are asked on first launch.</p>
-              <p>Update by pasting this into any terminal, including an AuraMux tab:</p>
-              <pre><code>curl -fsSL https://github.com/rmehdee/auramux-releases/releases/latest/download/install.sh | bash</code></pre>
-          </div>
-
-          <p class="rel-more">
-            <a href="https://github.com/rmehdee/auramux-releases/releases/tag/v1.6.0" target="_blank" rel="noopener"
-              >All of the 1.6.0 notes on GitHub &rarr;</a
             >
           </p>
         </article>
