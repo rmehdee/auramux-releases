@@ -31,6 +31,7 @@ AuraMux is not related to any other product with a similar name.
 - Architecture: universal, Apple Silicon and Intel
 - Engine: SwiftTerm, Swift 6, SwiftUI
 - Scrollback: 10,000 lines per session
+- Notes: plain Markdown files saved in the project folder under .auramux/
 - Telemetry: none. The only network request it makes is a daily update check.
 - Account required: no
 - Signing: ad-hoc signed, not notarized yet
@@ -61,6 +62,19 @@ asked to quit manually instead.
   marker when the working tree is dirty
 - An amber bell badge on any session waiting for input; a cyan dot on any
   session with new output since it was last viewed
+- The Dock icon and the status bar count sessions waiting for input
+- A notes panel beside the terminal: each tab holds any number of notes with
+  live Markdown styling and clickable checklists. Notes are plain Markdown
+  files saved inside the project folder under .auramux/, autosaved with the
+  terminal, and readable by any editor.
+- Drag sessions to reorder them, drop into the pinned group or use Pin to Top
+  from the right-click menu
+- Remote View: watch a session running on another Mac on the same local
+  network, view only. Approval needs a six digit code shown on the Mac being
+  watched, disconnecting revokes access, and the viewer verifies which Mac it
+  is talking to. No accounts, no servers.
+- Updates are checksum-verified before installing, and permissions persist
+  across updates
 - Claude Code notifications: Claude Code rings the terminal bell when it
   finishes or needs an answer. It only enables that by itself in a handful of
   terminals, so AuraMux offers to set it up on first launch with one click,

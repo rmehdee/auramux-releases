@@ -17,7 +17,7 @@
     <title>AuraMux, a macOS terminal built for AI coding sessions</title>
     <meta
       name="description"
-      content="A free macOS terminal that keeps every task in its own session, with the folder and git branch visible, and brings them all back after a restart. Badges whichever session is waiting on you. No config file to write. macOS 14 or later, Apple Silicon and Intel."
+      content="A free macOS terminal that keeps every task in its own session, with the folder and git branch visible, and brings them all back after a restart. Badges whichever session is waiting on you. Notes live beside the terminal, saved in your project. No config file to write. macOS 14 or later, Apple Silicon and Intel."
     />
     <link rel="canonical" href="https://auramux.com/" />
 
@@ -52,7 +52,7 @@
     />
     <meta
       property="og:description"
-      content="Every task in its own session, with its folder and git branch visible, all of them restored after a restart. Nothing to configure."
+      content="Every task in its own session, with its folder and git branch visible, all of them restored after a restart. Notes saved in the project. Nothing to configure."
     />
     <meta property="og:image" content="https://auramux.com/og.png" />
     <meta property="og:image:width" content="1200" />
@@ -64,7 +64,7 @@
     />
     <meta
       name="twitter:description"
-      content="Every task in its own session, with its folder and git branch visible, all of them restored after a restart. Nothing to configure."
+      content="Every task in its own session, with its folder and git branch visible, all of them restored after a restart. Notes saved in the project. Nothing to configure."
     />
     <meta name="twitter:image" content="https://auramux.com/og.png" />
 
@@ -83,7 +83,7 @@
     <link rel="icon" href="/icon-32.png" sizes="32x32" type="image/png" />
     <link rel="icon" href="/icon-16.png" sizes="16x16" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
-    <link rel="stylesheet" href="/style.css?v=0a6d8ad3" />
+    <link rel="stylesheet" href="/style.css?v=28efa6be" />
 
     <!--
       Structured data. The SoftwareApplication block is what search engines and
@@ -122,16 +122,21 @@
               "name": "Robin Mehdee",
               "url": "https://robinmehdee.com"
             },
-            "description": "A native macOS terminal for running AI coding CLIs across many long-lived sessions. One tab per session, split view, session restore, and a status badge on any session that finishes or is waiting for input.",
+            "description": "A native macOS terminal for running AI coding CLIs across many long-lived sessions. One tab per session, split view, session restore, a status badge on any session that finishes or is waiting for input, and notes kept as Markdown files in the project folder.",
             "featureList": [
               "One tab per session with git branch and dirty state",
               "Status badge on sessions waiting for input or with new output",
+              "Dock badge counting sessions waiting for input",
+              "Notes panel with Markdown files saved in the project folder",
+              "Drag to reorder sessions, pin to top",
               "Claude Code notifications via the terminal bell",
               "Session restore after a restart",
               "Split view, two sessions side by side",
+              "Remote View: watch a session on another Mac, view only",
               "Seven terminal themes",
               "Command palette and find across 10,000 lines of scrollback",
               "Passcode lock or Touch ID",
+              "Checksum-verified updates",
               "No telemetry"
             ]
           },
@@ -174,6 +179,22 @@
       "acceptedAnswer": {
         "@type": "Answer",
         "text": "Yes. Claude Code rings the terminal bell when it finishes or needs an answer, and AuraMux turns that into a badge on the tab. Claude Code only enables that automatically in a few terminals, so on first launch AuraMux offers to set it up for you. It adds one key to ~/.claude/settings.json, backs the file up first, leaves every other setting alone, and will not touch a file it cannot read."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What are notes, and where do they live?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Each tab can hold notes: a to-do, a plan, notes from a call, written with live styling and checklists. They are plain Markdown files saved inside the project folder under .auramux/, autosaved on the same rhythm as the terminal, and readable by any editor. Close the tab or reset the app and the files are still there."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I watch a session from another Mac?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Remote View shows a session running on another Mac on the same local network, view only. Approval needs a six digit code shown on the Mac being watched, disconnecting revokes access, and the viewer verifies which Mac it is talking to. Local network only, no accounts, no servers."
       }
     },
     {
@@ -367,6 +388,8 @@
             A free macOS terminal for running several AI coding sessions at
             once. Each one keeps its folder and git branch in view, all of them
             come back after a restart, and the one waiting on you is marked.
+            Notes live beside the terminal, saved in the project they belong
+            to.
           </p>
 
           <div class="install">
@@ -386,227 +409,116 @@
 
       <section aria-label="The interface">
         <div class="wrap">
+          <!--
+            A scripted walkthrough of the interface, driven by an animated
+            pointer: switching sessions, pinning from the context menu,
+            dragging to reorder, notes written end to end, and themes
+            restyling everything. The palettes are the app's own.
+
+            The window ships with a finished still of the first scene baked
+            in, so without JavaScript this is a truthful screenshot rather
+            than an empty stage. The bar of controls is JavaScript-only and
+            hidden until the script arrives. Everything inside the window is
+            drawn by /app.js.
+          -->
+          <div class="demo-bar">
+            <p class="demo-cap" id="cap"><b>Claude in a tab.</b> robin@mehdee runs Claude Code like any command. The session, folder and scrollback all persist.</p>
+            <div class="demo-dots" id="dots" aria-hidden="true"></div>
+            <div class="demo-controls">
+              <button id="play" type="button" aria-pressed="true">Pause</button>
+              <button id="next" type="button">Next scene</button>
+            </div>
+          </div>
+
           <div class="shot-scroll">
-            <!-- The overlay lives inside the scroller, so the highlight travels
-                 with the content instead of drifting off it. -->
-            <div class="tour-host" id="tour-host">
             <div
-              class="win"
+              class="app"
+              id="app"
               role="img"
-              aria-label="The AuraMux interface: a sidebar listing four sessions with their git branches and status badges, two split terminal panes running Claude Code and a dev server, and a status bar along the bottom."
+              aria-label="The AuraMux window. A sidebar lists three sessions with their folders and git branches. The terminal is running Claude Code, which has just fixed a failing checkout test. A notes panel can open beside the terminal."
             >
-              <div class="bar" data-tour="titlebar">
-                <span class="lights" aria-hidden="true">
-                  <i style="background: #ff5f57"></i>
-                  <i style="background: #febc2e"></i>
-                  <i style="background: #28c840"></i>
-                </span>
-                <span class="name">checkout revamp</span>
+              <div class="titlebar">
+                <i style="background: #ff5f57"></i><i style="background: #febc2e"></i><i style="background: #28c840"></i>
+                <span id="wintitle">checkout revamp</span>
               </div>
-
-              <div class="body">
-                <aside class="side">
-                  <div class="head">
-                    Sessions <span class="n">4</span
-                    ><span class="plus" aria-hidden="true">+</span>
-                  </div>
-                  <div class="rule" aria-hidden="true"></div>
-
-                  <div class="sessions" data-tour="sessions">
-                    <div class="s on">
-                      <span
-                        class="dot"
-                        style="
-                          background: #33ff99;
-                          box-shadow: 0 0 12px rgba(51, 255, 153, 0.32);
-                        "
-                        aria-hidden="true"
-                      ></span>
-                      <span>
-                        <span class="t">checkout revamp</span>
-                        <span class="p">~/dev/app</span>
-                        <span class="b" data-tour="git"
-                          >&#8903; feat/checkout-v2<span class="dirty">
-                            &bull;</span
-                          ></span
-                        >
-                      </span>
-                      <span class="st" aria-hidden="true"></span>
-                    </div>
-
-                    <div class="s">
-                      <span
-                        class="dot"
-                        style="background: #7fd7ff"
-                        aria-hidden="true"
-                      ></span>
-                      <span>
-                        <span class="t">npm run dev</span>
-                        <span class="p">~/dev/app</span>
-                        <span class="b">&#8903; feat/checkout-v2</span>
-                      </span>
-                      <span class="st" data-tour="new-output"
-                        ><span class="out" aria-hidden="true"></span
-                      ></span>
-                    </div>
-
-                    <div class="s">
-                      <span
-                        class="dot"
-                        style="background: #ffd479"
-                        aria-hidden="true"
-                      ></span>
-                      <span>
-                        <span class="t">api &middot; migrations</span>
-                        <span class="p">~/dev/api</span>
-                        <span class="b">&#8903; main</span>
-                      </span>
-                      <span class="st">
-                        <span class="bell" data-tour="needs-input" aria-hidden="true">
-                          <svg
-                            width="13"
-                            height="13"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                          >
-                            <path
-                              d="M12 2a6 6 0 0 0-6 6c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5a6 6 0 0 0-6-6zm0 20a2.4 2.4 0 0 0 2.4-2h-4.8a2.4 2.4 0 0 0 2.4 2z"
-                            />
-                          </svg>
-                        </span>
+              <div class="cols">
+                <div class="side">
+                  <div class="side-h"><b>SESSIONS</b><span>3</span></div>
+                  <div id="tabs">
+                    <div class="tab sel">
+                      <span class="dot"></span>
+                      <span class="m">
+                        <span class="n">checkout revamp</span>
+                        <span class="p">~/dev/app&ensp;&#8963; feat/v2</span>
                       </span>
                     </div>
-
-                    <div class="s">
-                      <span
-                        class="dot"
-                        style="background: #c792ea"
-                        aria-hidden="true"
-                      ></span>
-                      <span>
-                        <span class="t">logs</span>
+                    <div class="tab">
+                      <span class="dot"></span>
+                      <span class="m">
+                        <span class="n">agent &middot; api</span>
+                        <span class="p">~/dev/api&ensp;&#8963; main</span>
+                      </span>
+                    </div>
+                    <div class="tab">
+                      <span class="dot"></span>
+                      <span class="m">
+                        <span class="n">logs</span>
                         <span class="p">~/dev/api/logs</span>
                       </span>
-                      <span class="st" aria-hidden="true"></span>
                     </div>
                   </div>
-
-                  <div class="arch" data-tour="archived">
-                    <div class="lbl">&#9662; Archived <b>1</b></div>
-                    <div class="row">
-                      <i aria-hidden="true"></i>
-                      release-build
-                    </div>
-                  </div>
-
-                  <div class="foot" data-tour="autosave">
-                    <span>Thu Aug 6 12:14 PM</span>
-                    <span style="color: #8d9a92">&#10003;</span>
-                    <span class="tools" aria-hidden="true">
-                      <span>&#65420;</span>
-                      <svg
-                        width="15"
-                        height="15"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1.6"
-                      >
-                        <path
-                          d="M3 8.5a2 2 0 0 1 2-2h1.8l1.3-2h7.8l1.3 2H19a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
-                        />
-                        <circle cx="12" cy="12.5" r="3.2" />
-                      </svg>
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1.7"
-                      >
-                        <rect x="5" y="11" width="14" height="9" rx="2" />
-                        <path d="M8 11V8a4 4 0 0 1 8 0v3" />
-                      </svg>
-                      <span>&middot;&middot;&middot;</span>
+                  <div class="side-foot"><span>Thu Aug 14 9:41 AM</span><span>&#8943;</span></div>
+                </div>
+                <div class="term">
+                  <div class="pane-h">
+                    <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--t-green); display: inline-block"></span>
+                    <span id="panetitle">checkout revamp</span>
+                    <span class="ic">
+                      <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg>
+                      <span class="note-btn" id="notebtn"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2.5" y="2" width="11" height="12" rx="1.5"/><path d="M5 5.5h6M5 8h6M5 10.5h3.5"/></svg></span>
+                      <svg width="12" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M8 2.5v11"/></svg>
                     </span>
                   </div>
-                </aside>
-
-                <div class="term">
-                  <div class="panes">
-                    <section class="pane">
-                      <div class="ph">
-                        <i
-                          style="
-                            background: #33ff99;
-                            box-shadow: 0 0 12px rgba(51, 255, 153, 0.32);
-                          "
-                          aria-hidden="true"
-                        ></i>
-                        checkout revamp
-                      </div>
-                      <pre><span class="g">robin</span><span class="f">@</span><span class="c">mehdee</span> <span class="v">~/dev/app</span> <span class="g">&#10095;</span> claude
-<span class="w">&#10043; Claude Code</span><span class="f"> v2.1 &middot; opus
-
-</span></span><span class="g">&#10095;</span> <span class="w">Refactor the checkout flow to the new API</span>
-
-<span class="c">&#9679;</span> Reading the checkout module.
-<span class="f">  &#9500; Read src/checkout/flow.ts (218 lines)</span>
-<span class="c">&#9679;</span> <span class="a">Edit</span> <span class="c">src/checkout/flow.ts</span> <span class="g">+12</span> <span class="r">&#8722;5</span>
-<span class="c">&#9679;</span> Running tests&hellip;
-  <span class="g">&#10003;</span> 48 passed <span class="f">&middot; 0 failed &middot; 3.1s</span>
-<span class="c">&#9679;</span> Done. Checkout now uses <span class="c">apiClient.v2</span>.
-
-<span class="g">&#10095;</span> <span class="caret" aria-hidden="true"></span></pre>
-                    </section>
-
-                    <div class="divide" data-tour="split" aria-hidden="true"></div>
-
-                    <section class="pane">
-                      <div class="ph">
-                        <i style="background: #7fd7ff" aria-hidden="true"></i>
-                        npm run dev
-                      </div>
-                      <pre><span class="g">robin</span><span class="f">@</span><span class="c">mehdee</span> <span class="v">~/dev/app</span> <span class="g">&#10095;</span> npm run dev
-
-  <span class="v">VITE</span> <span class="g">v5.4</span> ready in <span class="a">412 ms</span>
-  <span class="g">&#10148;</span> Local: <span class="c">http://localhost:5173/</span>
-
-<span class="f">[vite]</span> <span class="g">hmr update</span> /src/checkout/flow.ts
-<span class="f">12:11</span> <span class="g">&#10003;</span> compiled cleanly <span class="f">&middot; 89 modules</span>
-
-<span class="g">&#10095;</span> git status
-<span class="f">On branch</span> <span class="v">feat/checkout-v2</span>
-<span class="a">Changes not staged:</span>
-  <span class="g">modified:</span> src/checkout/flow.ts
-
-<span class="g">&#10095;</span> <span class="caret" aria-hidden="true"></span></pre>
-                    </section>
+                  <div class="screen" id="screen">
+                    <div><span class="pr">robin@mehdee</span> ~/dev/app $ claude</div>
+                    <div><span class="dim2">&#9581;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9582;</span></div>
+                    <div><span class="dim2">&#9474;</span> <span class="vi">&#10035; Claude Code</span> <span class="dim2">v2.1 &middot; fable &#9474;</span></div>
+                    <div><span class="dim2">&#9584;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9583;</span></div>
+                    <div><span class="dim2">&#10095;</span> fix the flaky checkout test</div>
+                    <div><span class="cy">&#9679;</span> Reading tests/checkout.spec.ts <span class="dim2">(218 lines)</span></div>
+                    <div><span class="cy">&#9679;</span> Edit src/checkout/flow.ts <span class="dim2">+6 &#8722;2</span></div>
+                    <div><span class="pr">&#10003;</span> 48 passed <span class="dim2">&middot; 0 failed &middot; 3.1s</span></div>
                   </div>
-
-                  <div class="status" data-tour="statusbar">
-                    <span><span class="k">cwd</span> ~/dev/app</span>
-                    <span><span class="k">shell</span> zsh</span>
-                    <span class="right"
-                      ><span class="g">&#9679;</span> 4 sessions restored</span
-                    >
-                    <span><span class="k">scrollback</span> 10k</span>
+                  <div class="statusbar">
+                    <span id="cwd">cwd ~/dev/app</span><span>shell zsh</span>
+                    <span class="wait" id="wait">
+                      <svg width="9" height="9" viewBox="0 0 16 16" fill="var(--t-yellow)"><path d="M8 1.5a.9.9 0 0 1 .9.9v.44a4.1 4.1 0 0 1 3.2 4v2.3l1 1.5a.6.6 0 0 1-.5.94H3.4a.6.6 0 0 1-.5-.94l1-1.5v-2.3a4.1 4.1 0 0 1 3.2-4V2.4a.9.9 0 0 1 .9-.9Z"/></svg>
+                      <span>1 waiting</span>
+                    </span>
+                    <span class="right"><span>scrollback 10k</span><span style="color: var(--t-green)">&gt;_</span><span>AURAMUX</span><span class="beta">BETA</span></span>
                   </div>
                 </div>
+                <div class="notes" id="notes"><div class="notes-inner">
+                  <div class="notes-h">
+                    <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2.5" y="2" width="11" height="12" rx="1.5"/><path d="M5 5.5h6M5 8h6"/></svg>
+                    <span id="ntitle">NOTES</span><span class="plus" id="plusbtn">+</span>
+                  </div>
+                  <div id="notelist"></div>
+                  <div class="note-crumb" id="crumb"></div>
+                  <div class="note-ed" id="noteed"></div>
+                </div></div>
               </div>
-            </div>
+              <div id="ctx"></div>
+              <div class="ripple" id="ripple"></div>
+              <div id="cursor">
+                <svg width="17" height="24" viewBox="0 0 17 24">
+                  <path d="M1 1 L1 18.5 L5.4 14.6 L8.2 21.5 L11.4 20.1 L8.6 13.4 L14.6 13.2 Z" fill="#111" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/>
+                </svg>
+              </div>
             </div>
           </div>
 
-          <div class="tour-legend">
-            <p class="small">
-              The interface as it stands today. Hover or tap a label to find it.
-              <span class="only-xs">Swipe the window to see all of it.</span>
-            </p>
-            <ul id="tour-stops"></ul>
-            <div class="tour-caption" id="tour-caption" aria-live="polite"></div>
-          </div>
+          <p class="demo-foot" id="themefoot">Theme: Aura (default)</p>
         </div>
       </section>
 
@@ -616,15 +528,20 @@
             <li>Folder and git branch on every tab</li>
             <li>Badge when a session needs you</li>
             <li>Badge when a session has new output</li>
+            <li>Notes, saved as Markdown in your project</li>
+            <li>Drag to reorder, pin to the top</li>
+            <li>Dock badge counts sessions waiting</li>
             <li>Claude Code notifications, set up in one click</li>
             <li>Every session restored after a restart</li>
             <li>Autosaves every 20 seconds</li>
             <li>Archive a session, keep its history</li>
             <li>Split view, two sessions side by side</li>
+            <li>Remote View, watch another Mac read-only</li>
             <li>Command palette</li>
             <li>Find across 10,000 lines of scrollback</li>
             <li>Seven themes, switch live</li>
             <li>Passcode or Touch ID lock</li>
+            <li>Verified, checksummed updates</li>
             <li>Screenshot to Desktop, kill and reset</li>
             <li>No telemetry, no account</li>
           </ul>
@@ -835,6 +752,30 @@
                 one key to ~/.claude/settings.json, backs the file up first,
                 leaves every other setting alone, and will not touch a file it
                 cannot read.
+              </p>
+            </details>
+
+            <details>
+              <summary>What are notes, and where do they live?</summary>
+              <p class="ans">
+                Each tab can hold notes: a to-do, a plan, notes from a call,
+                written with live styling and checklists that tick when you
+                click them. They are plain Markdown files saved inside your
+                project folder under .auramux/, autosaved on the same rhythm as
+                the terminal, and readable by any editor. Close the tab or
+                reset the app and the files are still there.
+              </p>
+            </details>
+
+            <details>
+              <summary>Can I watch a session from another Mac?</summary>
+              <p class="ans">
+                Yes. Remote View shows a session running on another Mac on the
+                same local network, view only: you can read output and scroll
+                back, but not type. Approval needs a six digit code shown on
+                the Mac being watched, disconnecting revokes access, and the
+                viewer verifies which Mac it is talking to. Local network only,
+                no accounts, no servers.
               </p>
             </details>
 
@@ -1066,6 +1007,6 @@
       </svg>
     </button>
 
-    <script src="/app.js?v=f334836a" defer></script>
+    <script src="/app.js?v=9558cf0e" defer></script>
   </body>
 </html>

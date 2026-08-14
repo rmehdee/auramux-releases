@@ -307,304 +307,605 @@ section:first-of-type {
   max-width: 68ch;
 }
 
-/* ---------- the window mockup ---------- */
+/* ---------- the animated tour ---------- */
 
 .shot-scroll {
   margin-top: 2.5rem;
   overflow-x: auto;
-  /* The mockup has a fixed minimum width; let it scroll on phones rather than
+  /* The window has a fixed minimum width; let it scroll on phones rather than
      collapse into something that misrepresents the app. */
   -webkit-overflow-scrolling: touch;
 }
-.win {
+
+/*
+ * The bar of caption, scene dots and controls above the window. It only makes
+ * sense once the script is driving the scenes, so without JavaScript it is
+ * not shown at all and the window below stands alone as a still.
+ */
+.demo-bar {
+  display: none;
+}
+.js .demo-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 2.5rem;
+}
+.js .demo-bar + .shot-scroll {
+  margin-top: 0.9rem;
+}
+.demo-cap {
+  flex: 1;
+  min-width: 15rem;
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--dim);
+}
+.demo-cap b {
+  color: var(--accent);
+  font-weight: 600;
+}
+.demo-dots {
+  display: flex;
+  gap: 0.35rem;
+}
+.demo-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line);
+  display: block;
+  transition: background 0.3s;
+}
+.demo-dots i.on {
+  background: var(--accent);
+}
+.demo-controls {
+  display: flex;
+  gap: 0.4rem;
+}
+.demo-controls button {
+  font: 500 0.8125rem var(--sans);
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--dim);
+}
+.demo-controls button:hover {
+  color: var(--fg);
+  border-color: var(--faint);
+}
+.demo-controls button[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #06120c;
+}
+.demo-foot {
+  margin: 0.9rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--faint);
+}
+
+/*
+ * The window itself. The --t-* and --s-* variables are the app's own palettes
+ * and are what the theme scene animates through; everything inside the window
+ * derives from them, which is exactly the claim the scene is making.
+ */
+.app {
+  --t-bg: #070b0a;
+  --t-fg: #cdd8d1;
+  --t-green: #4dff9e;
+  --t-yellow: #ffb84d;
+  --t-cyan: #38e1ff;
+  --t-violet: #b48ead;
+  --s-bg: #101715;
+  --s-sel: #1a2420;
+  --s-text: #cdd8d1;
+  --s-dim: #7f8f88;
+  --s-line: #1d2924;
+
+  position: relative;
   min-width: 46rem;
-  border: 1px solid #1b2823;
   border-radius: 12px;
   overflow: hidden;
-  background: #0e1412;
+  border: 1px solid var(--line);
   box-shadow:
     0 40px 120px -30px rgba(0, 0, 0, 0.85),
     0 0 80px -46px rgba(51, 255, 153, 0.22);
   font-family: var(--mono);
+  user-select: none;
+  background: var(--t-bg);
+  transition: background 0.5s;
 }
-.win .bar {
+.titlebar {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
-  height: 2.5rem;
-  padding: 0 0.9rem;
-  border-bottom: 1px solid #1b2823;
-  background: linear-gradient(#0d1512, #0a100d);
+  gap: 6px;
+  padding: 9px 12px;
+  background: var(--s-bg);
+  border-bottom: 1px solid var(--s-line);
+  transition: background 0.5s;
 }
-.lights {
+.titlebar i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.titlebar span {
+  margin-left: 8px;
+  font-size: 11px;
+  color: var(--s-dim);
+}
+.cols {
   display: flex;
-  gap: 0.5rem;
+  min-height: 470px;
+  align-items: stretch;
 }
-.lights i {
-  width: 12px;
-  height: 12px;
-  border-radius: 999px;
-  display: block;
-}
-.win .bar .name {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #d3ece1;
-  font-family: var(--sans);
-}
-.win .body {
-  display: grid;
-  grid-template-columns: 14rem 1fr;
-}
+
 .side {
+  width: 200px;
+  flex: none;
+  background: var(--s-bg);
+  border-right: 1px solid var(--s-line);
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #1b2823;
-  background: linear-gradient(#0b120f, #090d0b);
+  padding: 8px 0;
+  transition: background 0.5s;
 }
-.side .head {
+.side-h {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.6rem 0.9rem;
-  font-size: 0.625rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: #7c8c83;
+  padding: 2px 12px 8px;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  color: var(--s-dim);
 }
-.side .head .n {
-  margin-left: auto;
-  color: #33ff99;
-  letter-spacing: 0;
-}
-.side .head .plus {
-  color: #7c8c83;
-}
-.rule {
-  height: 1px;
-  background: #1b2823;
-}
-.sessions {
+.tab {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 0.5rem;
-}
-.s {
+  gap: 7px;
+  padding: 7px 12px;
+  align-items: flex-start;
   position: relative;
-  display: grid;
-  grid-template-columns: 0.5rem 1fr auto;
-  gap: 0.6rem;
-  align-items: start;
-  padding: 0.5rem 0.6rem;
-  border: 1px solid transparent;
-  border-radius: 8px;
+  transition:
+    background 0.25s,
+    transform 0.35s,
+    box-shadow 0.35s,
+    opacity 0.3s;
 }
-.s.on {
-  border-color: rgba(51, 255, 153, 0.2);
-  background: rgba(51, 255, 153, 0.1);
+.tab.sel {
+  background: var(--s-sel);
 }
-.s.on::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.5rem;
-  bottom: 0.5rem;
-  width: 2.5px;
-  border-radius: 3px;
-  background: #33ff99;
-  box-shadow: 0 0 12px rgba(51, 255, 153, 0.32);
+/* A tab being dragged: lifted off the list, slightly transparent, above it. */
+.tab.lift {
+  transform: translate(5px, -3px) scale(1.02);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  opacity: 0.92;
+  z-index: 2;
+  background: var(--s-sel);
 }
-.s .dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  margin-top: 0.35rem;
+.tab .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--t-green);
+  margin-top: 4px;
+  flex: none;
+  transition: background 0.5s;
 }
-.s .t,
-.s .p,
-.s .b {
-  display: block;
+.tab .m {
+  min-width: 0;
+  flex: 1;
 }
-.s .t {
-  font-size: 0.75rem;
-  color: #d3ece1;
+.tab .n {
+  font-size: 11.5px;
+  color: var(--s-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.tab .p {
+  font-size: 8.5px;
+  color: var(--s-dim);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.s.on .t {
-  color: #eafff3;
+.tab .glyph {
+  width: 10px;
+  height: 10px;
+  flex: none;
+  opacity: 0;
+  transition: opacity 0.4s;
 }
-.s .p {
-  font-size: 0.625rem;
-  color: #4d5b53;
+.tab .glyph.show {
+  opacity: 1;
 }
-.s .b {
-  font-size: 0.5875rem;
-  color: #7c8c83;
+/* The insertion line a drag shows before the drop lands. */
+.ins {
+  height: 2px;
+  margin: 0 8px;
+  border-radius: 2px;
+  background: var(--t-green);
+  opacity: 0;
+  transition: opacity 0.25s;
 }
-.s .b .dirty {
-  color: #ffd479;
+.ins.show {
+  opacity: 0.6;
 }
-.s .st {
-  align-self: center;
-  display: flex;
+.bell {
+  width: 13px;
+  height: 13px;
+  flex: none;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.35s;
 }
-.s .st .bell {
-  color: #ffd479;
-  animation: pulse 2s ease-in-out infinite;
+.bell.show {
+  opacity: 1;
+  transform: scale(1);
+  animation: demo-pulse 1.4s ease-in-out infinite;
 }
-.s .st .out {
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-  background: #7fd7ff;
-  display: block;
-}
-@keyframes pulse {
+@keyframes demo-pulse {
   50% {
-    opacity: 0.45;
+    filter: drop-shadow(0 0 5px var(--t-yellow));
   }
 }
-.arch {
-  border-top: 1px solid #142019;
-  padding: 0.35rem 0.5rem 0.25rem;
-}
-.arch .lbl {
-  padding: 0.35rem 0.5rem;
-  font-size: 0.5875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: #4d5b53;
-}
-.arch .lbl b {
-  color: #2fb873;
-  font-weight: 400;
-}
-.arch .row {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.35rem 0.6rem;
-  font-size: 0.75rem;
-  color: #7c8c83;
-}
-.arch .row i {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: rgba(124, 140, 131, 0.4);
-  display: block;
-}
-.foot {
+.side-foot {
   margin-top: auto;
-  white-space: nowrap;
+  padding: 8px 12px 2px;
+  font-size: 9px;
+  color: var(--s-dim);
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 0.5rem;
-  border-top: 1px solid #1b2823;
-  padding: 0.6rem 0.75rem;
-  font-size: 0.625rem;
-  color: #7c8c83;
 }
-.foot .tools {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  /* The app's own colour here sits near 2.4:1 and vanishes at this size on a
-     web page, so it is lifted a step. */
-  color: #8d9a92;
-}
+
 .term {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  min-width: 0;
-  background: #212734;
+  background: var(--t-bg);
+  transition: background 0.5s;
 }
-.panes {
-  display: grid;
-  grid-template-columns: 1fr 1px 1fr;
-  flex: 1;
-}
-.pane {
-  min-width: 0;
-}
-.pane .ph {
+.pane-h {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.45rem 0.75rem;
-  border-bottom: 1px solid #142019;
-  font-size: 0.6875rem;
-  color: #7c8c83;
+  gap: 8px;
+  padding: 7px 12px;
+  font-size: 10px;
+  color: var(--s-dim);
+  border-bottom: 1px solid var(--s-line);
 }
-.pane .ph i {
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-  display: block;
-}
-.pane pre {
-  margin: 0;
-  padding: 0.75rem 0.9rem;
-  overflow-x: auto;
-  font-size: 0.6875rem;
-  line-height: 1.55;
-  color: #d3ece1;
-}
-.divide {
-  /* Light hairline: against the lifted terminal background a dark divider
-     disappears entirely. */
-  background: rgba(233, 240, 236, 0.18);
-}
-.status {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  height: 1.75rem;
-  padding: 0 0.9rem;
-  border-top: 1px solid #1b2823;
-  background: linear-gradient(#0b110e, #080c0a);
-  font-size: 0.625rem;
-  letter-spacing: 0.05em;
-  color: #4d5b53;
-}
-.status .k {
-  color: #7c8c83;
-}
-.status .right {
+.pane-h .ic {
   margin-left: auto;
-  color: #2fb873;
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
-.g {
-  color: #33ff99;
+.pane-h .ic svg {
+  opacity: 0.75;
 }
-.c {
-  color: #7fd7ff;
+.pane-h .ic .note-btn {
+  transition: all 0.3s;
+  border-radius: 4px;
+  padding: 2px;
+  color: var(--s-dim);
 }
-.a {
-  color: #ffd479;
+.pane-h .ic .note-btn.active {
+  color: var(--t-green);
 }
-.v {
-  color: #c792ea;
+.screen {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 11.5px;
+  line-height: 1.6;
+  overflow: hidden;
+  color: var(--t-fg);
+  transition: color 0.5s;
 }
-.r {
-  color: #ff6b8b;
+.screen div {
+  white-space: pre-wrap;
+  word-break: break-all;
 }
-.f {
-  color: #4d5b53;
+.pr {
+  color: var(--t-green);
+  transition: color 0.5s;
 }
-.w {
-  color: #eafff3;
+.dim2 {
+  color: var(--s-dim);
+}
+.yel {
+  color: var(--t-yellow);
+}
+.cy {
+  color: var(--t-cyan);
+}
+.vi {
+  color: var(--t-violet);
 }
 .caret {
   display: inline-block;
-  width: 7px;
+  width: 6px;
   height: 12px;
-  background: #33ff99;
+  background: var(--t-fg);
   vertical-align: -2px;
+  animation: demo-blink 1s steps(1) infinite;
+}
+@keyframes demo-blink {
+  50% {
+    opacity: 0;
+  }
+}
+.statusbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 5px 12px;
+  font-size: 9px;
+  color: var(--s-dim);
+  border-top: 1px solid var(--s-line);
+  background: var(--s-bg);
+  transition: background 0.5s;
+}
+.statusbar .wait {
+  color: var(--t-yellow);
+  display: none;
+  gap: 4px;
+  align-items: center;
+}
+.statusbar .wait.show {
+  display: flex;
+}
+.statusbar .right {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.beta {
+  font-size: 7px;
+  letter-spacing: 0.1em;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: var(--t-yellow);
+  color: #1a1206;
+  font-weight: 700;
+}
+
+/* The notes panel, slid open by its scene. */
+.notes {
+  width: 0;
+  flex: none;
+  overflow: hidden;
+  background: var(--s-bg);
+  border-left: 1px solid var(--s-line);
+  transition: width 0.32s cubic-bezier(0.2, 0.9, 0.25, 1);
+  display: flex;
+  flex-direction: column;
+}
+.notes.open {
+  width: 236px;
+}
+.notes-inner {
+  width: 236px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.notes-h {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 10px;
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
+  color: var(--s-dim);
+  border-bottom: 1px solid var(--s-line);
+  white-space: nowrap;
+}
+.notes-h .plus {
+  margin-left: auto;
+  color: var(--s-text);
+  font-size: 13px;
+  width: 16px;
+  height: 16px;
+  line-height: 15px;
+  text-align: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+.notes-h .plus.press {
+  background: var(--s-sel);
+  color: var(--t-green);
+  transform: scale(1.2);
+}
+.note-row {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  padding: 6px 10px;
+  margin: 0 4px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.note-row.sel {
+  background: color-mix(in srgb, var(--t-green) 12%, transparent);
+}
+.note-row .cdot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1px solid var(--s-dim);
+  flex: none;
+  transition: all 0.3s;
+}
+.note-row .cdot.violet {
+  background: var(--t-violet);
+  border-color: var(--t-violet);
+}
+.note-row .nm {
+  min-width: 0;
+  flex: 1;
+}
+.note-row .nn {
+  font-size: 10.5px;
+  color: var(--s-text);
+}
+.note-row .nt {
+  font-size: 8px;
+  color: var(--s-dim);
+}
+.note-crumb {
+  font-size: 8px;
+  color: var(--s-dim);
+  text-align: center;
+  padding: 5px 8px 0;
+}
+.note-ed {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 10.5px;
+  line-height: 1.7;
+  color: var(--s-text);
+}
+.note-ed .h {
+  font-size: 14px;
+  font-weight: 700;
+}
+.note-ed .cb {
+  color: var(--t-green);
+}
+.note-ed .done {
+  color: var(--s-dim);
+  text-decoration: line-through;
+}
+.note-ed .done .cb {
+  color: var(--s-dim);
+}
+.ncaret {
+  display: inline-block;
+  width: 5px;
+  height: 11px;
+  background: var(--s-text);
+  vertical-align: -2px;
+  animation: demo-blink 1s steps(1) infinite;
+}
+
+/*
+ * The pointer, its click ripple and the context menu are actors in the script,
+ * so they simply do not exist until JavaScript is running.
+ */
+#cursor,
+#ctx,
+.ripple {
+  display: none;
+}
+.js #cursor {
+  display: block;
+  position: absolute;
+  z-index: 40;
+  pointer-events: none;
+  left: 70%;
+  top: 85%;
+  transition:
+    left 0.5s cubic-bezier(0.3, 0.7, 0.3, 1),
+    top 0.5s cubic-bezier(0.3, 0.7, 0.3, 1),
+    opacity 0.4s;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+.js #cursor svg {
+  transition: transform 0.12s;
+  display: block;
+}
+.js #cursor.press svg {
+  transform: scale(0.88);
+}
+.js .ripple {
+  display: block;
+  position: absolute;
+  z-index: 39;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  pointer-events: none;
+  border: 2px solid var(--t-green);
+  opacity: 0;
+  transform: scale(0.3);
+}
+.ripple.go {
+  animation: demo-rip 0.45s ease-out;
+}
+.ripple.right {
+  border-color: var(--t-cyan);
+}
+@keyframes demo-rip {
+  0% {
+    opacity: 0.85;
+    transform: scale(0.3);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.15);
+  }
+}
+.js #ctx {
+  display: block;
+  position: absolute;
+  z-index: 35;
+  background: var(--s-bg);
+  border: 1px solid var(--s-line);
+  border-radius: 7px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  padding: 4px;
+  min-width: 120px;
+  opacity: 0;
+  transform: scale(0.95);
+  transition:
+    opacity 0.15s,
+    transform 0.15s;
+  pointer-events: none;
+  font-family: var(--mono);
+}
+#ctx.show {
+  opacity: 1;
+  transform: scale(1);
+}
+#ctx .mi {
+  font-size: 10px;
+  color: var(--s-text);
+  padding: 4px 9px;
+  border-radius: 4px;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+#ctx .mi.hot {
+  background: var(--t-green);
+  color: #06120c;
+}
+#ctx .sw {
+  display: flex;
+  gap: 5px;
+  padding: 4px 9px;
+}
+#ctx .sw i {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  display: block;
+  border: 1px solid transparent;
+  transition: transform 0.15s;
+}
+#ctx .sw i.hot {
+  transform: scale(1.35);
+  border-color: #fff;
 }
 
 /* ---------- feature grid ---------- */
@@ -1055,10 +1356,9 @@ footer {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-.win {
-  /* Sits above the ambient glow so the mockup reads as the brightest object
+.app {
+  /* Sits above the ambient glow so the window reads as the brightest object
      on the page, which is the point of it. */
-  position: relative;
   z-index: 1;
 }
 
@@ -1405,87 +1705,6 @@ footer {
   color: var(--fg);
 }
 
-/* ---------- the annotated walkthrough ---------- */
-
-.tour-host {
-  position: relative;
-  min-width: 46rem;
-}
-/*
- * The highlight, drawn on the element being pointed at.
- *
- * An outline rather than a border, so nothing in the mockup shifts by a pixel
- * when it appears, and a background tint as well so it still reads on the very
- * thin targets like the split divider, and on the ones at the window's edge
- * where the outline is clipped by the rounded corners.
- */
-.tour-lit {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-  border-radius: 4px;
-  background-color: rgba(62, 207, 142, 0.14) !important;
-}
-
-.tour-legend {
-  margin-top: 1rem;
-}
-.tour-legend .small {
-  margin: 0;
-  font-size: 0.75rem;
-  color: var(--faint);
-}
-.only-xs {
-  display: none;
-}
-@media (max-width: 640px) {
-  .only-xs {
-    display: inline;
-  }
-}
-.tour-legend ul {
-  list-style: none;
-  margin: 0.75rem 0 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-.tour-legend button {
-  background: none;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  color: var(--dim);
-  font: inherit;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.6rem;
-  cursor: pointer;
-  transition:
-    border-color 0.15s ease,
-    color 0.15s ease,
-    background 0.15s ease;
-}
-.tour-legend button:hover {
-  border-color: var(--faint);
-  color: var(--fg);
-}
-.tour-legend button.on {
-  border-color: var(--accent);
-  background: rgba(62, 207, 142, 0.1);
-  color: var(--fg);
-}
-/* Fixed height, so revealing a caption never shifts the page under the cursor. */
-.tour-caption {
-  margin-top: 0.75rem;
-  min-height: 3.25rem;
-  max-width: 74ch;
-  font-size: 0.875rem;
-  color: var(--dim);
-}
-.tour-caption span {
-  color: var(--fg);
-}
-
-
 /* ---------- shrinkable grid and flex items ---------- */
 
 /*
@@ -1508,7 +1727,6 @@ footer {
 .card p,
 .card li,
 .reviews .r-body,
-.tour-caption,
 .review-cta p,
 .note {
   overflow-wrap: anywhere;
@@ -1524,11 +1742,6 @@ footer {
   .pill {
     display: none;
   }
-}
-
-/* No 300ms wait between tapping a label and the highlight appearing. */
-.tour-legend button {
-  touch-action: manipulation;
 }
 
 /* ---------- back to top ---------- */

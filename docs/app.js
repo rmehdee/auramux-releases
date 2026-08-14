@@ -86,149 +86,472 @@
     });
 
 
-  /* ---------- the annotated walkthrough ---------- */
+  /* ---------- the animated tour ---------- */
 
   /*
-   * Labels sit in a legend below the window rather than as pins on top of it.
-   * Numbered pins covered the exact details they pointed at, the traffic
-   * lights, the git branch, the clock, which defeated the point.
+   * A scripted walkthrough of the window above: scenes drive a fake pointer
+   * through the things the app actually does. Everything here paints over the
+   * static still that ships in the HTML, so with this file missing or blocked
+   * the page keeps a truthful screenshot and loses only the motion.
    *
-   * The ring is measured from the real elements, tagged with data-tour, not
-   * from hardcoded percentages, so it follows the mockup wherever the layout
-   * puts it. Anything measuring zero is not on screen at this width and drops
-   * out of the legend by itself.
+   * The engine is a list of scenes, each a list of (delay, step) pairs played
+   * with setTimeout. Scenes only run while the window is on screen, both to
+   * spare the battery and because motion nobody can see is pure cost.
    */
 
-  var STOPS = [
-    ["sessions", "Sessions", "One tab per task. Agents in some, a dev server or logs in others. Click to switch, double-click to rename."],
-    ["needs-input", "Waiting for you", "An amber bell means that session has stopped and is waiting on input. This is what lets you walk away while an agent works."],
-    ["new-output", "New output", "A cyan dot means the session has produced output since you last looked at it. No dot means nothing has changed."],
-    ["git", "Git branch", "Each session shows its current branch, with an amber marker when the working tree is dirty."],
-    ["split", "Split view", "Two sessions side by side, with a draggable divider. Each pane keeps its own title and its own find."],
-    ["archived", "Archived", "Finished with a session but not ready to lose it? Archive it, then restore or delete it later."],
-    ["autosave", "Autosave", "The check confirms sessions are saved, which happens every 20 seconds. Beside it: screenshot to Desktop, lock now, and more."],
-    ["titlebar", "Title bar", "The window title is the active session's name, so you can tell which task you are looking at from the Dock or Mission Control."],
-    ["statusbar", "Status bar", "Working directory, shell, how many sessions were restored on launch, and the scrollback limit."]
-  ];
+  var demo = document.getElementById("app");
+  if (demo) {
+    var THEMES = {
+      aura: {
+        label: "Aura (default)",
+        v: { "--t-bg": "#070b0a", "--t-fg": "#cdd8d1", "--t-green": "#4dff9e",
+             "--t-yellow": "#ffb84d", "--t-cyan": "#38e1ff", "--t-violet": "#b48ead",
+             "--s-bg": "#101715", "--s-sel": "#1a2420", "--s-text": "#cdd8d1",
+             "--s-dim": "#7f8f88", "--s-line": "#1d2924" },
+      },
+      dracula: {
+        label: "Dracula",
+        v: { "--t-bg": "#282a36", "--t-fg": "#f8f8f2", "--t-green": "#50fa7b",
+             "--t-yellow": "#f1fa8c", "--t-cyan": "#8be9fd", "--t-violet": "#bd93f9",
+             "--s-bg": "#31333f", "--s-sel": "#3c3f4d", "--s-text": "#f8f8f2",
+             "--s-dim": "#9ba0b0", "--s-line": "#3d404e" },
+      },
+      classic: {
+        label: "Classic (light)",
+        v: { "--t-bg": "#ffffff", "--t-fg": "#1a1a1a", "--t-green": "#127a12",
+             "--t-yellow": "#8a6d00", "--t-cyan": "#007a8a", "--t-violet": "#8e24aa",
+             "--s-bg": "#f0f0f0", "--s-sel": "#dedede", "--s-text": "#1a1a1a",
+             "--s-dim": "#6e6e6e", "--s-line": "#d8d8d8" },
+      },
+    };
+    var applyTheme = function (key) {
+      for (var k in THEMES[key].v) demo.style.setProperty(k, THEMES[key].v[k]);
+      document.getElementById("themefoot").textContent =
+        "Theme: " + THEMES[key].label;
+    };
 
-  var host = document.getElementById("tour-host");
-  var stopList = document.getElementById("tour-stops");
-  var caption = document.getElementById("tour-caption");
+    var PROMPT = '<span class="pr">robin@mehdee</span>';
 
-  if (host && stopList && caption) {
-    var active = null;
+    /* -- the pointer -- */
+    var cursorEl = document.getElementById("cursor");
+    var rippleEl = document.getElementById("ripple");
+    var cursorTo = function (target, dx, dy) {
+      var el = typeof target === "string" ? document.getElementById(target) : target;
+      if (!el) return;
+      var a = demo.getBoundingClientRect();
+      var r = el.getBoundingClientRect();
+      cursorEl.style.left = r.left - a.left + r.width * (dx === undefined ? 0.5 : dx) + "px";
+      cursorEl.style.top = r.top - a.top + r.height * (dy === undefined ? 0.5 : dy) + "px";
+    };
+    var clickFx = function (kind) {
+      cursorEl.classList.add("press");
+      setTimeout(function () { cursorEl.classList.remove("press"); }, 140);
+      rippleEl.style.left = parseFloat(cursorEl.style.left || "0") - 12 + "px";
+      rippleEl.style.top = parseFloat(cursorEl.style.top || "0") - 12 + "px";
+      rippleEl.classList.toggle("right", kind === "right");
+      rippleEl.classList.remove("go");
+      void rippleEl.offsetWidth;
+      rippleEl.classList.add("go");
+    };
+    var pressCursor = function (down) { cursorEl.classList.toggle("press", down); };
+    var parkCursor = function () { cursorEl.style.left = "78%"; cursorEl.style.top = "88%"; };
 
-    var LIT = "tour-lit";
+    /* -- the context menu -- */
+    var ctxEl = document.getElementById("ctx");
+    var showCtx = function (items) {
+      ctxEl.innerHTML = items
+        .map(function (it) {
+          return it.swatches
+            ? '<div class="sw">' + it.swatches.map(function (c) {
+                return '<i id="sw-' + c + '" style="background:var(--t-' + c + ')"></i>';
+              }).join("") + "</div>"
+            : '<div class="mi" id="mi-' + it.id + '">' + it.label + "</div>";
+        })
+        .join("");
+      ctxEl.style.left = parseFloat(cursorEl.style.left || "0") + 6 + "px";
+      ctxEl.style.top = parseFloat(cursorEl.style.top || "0") + 4 + "px";
+      ctxEl.classList.add("show");
+    };
+    var hideCtx = function () { ctxEl.classList.remove("show"); };
+
+    /* -- the sidebar -- */
+    var noteGlyph = function (id) {
+      return '<svg class="glyph" id="' + id + '" width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="2" width="11" height="12" rx="1.5"/><path d="M5 5.5h6M5 8h6"/></svg>';
+    };
+    var pinGlyph = function (id) {
+      return '<svg class="glyph" id="' + id + '" width="8" height="8" viewBox="0 0 16 16" fill="currentColor"><path d="M9.9 1.2 14.8 6.1a.7.7 0 0 1-.4 1.2l-1.9.3-3 3 .3 2.3a.7.7 0 0 1-1.2.6L6 11l-3.5 3.5a.6.6 0 0 1-.9-.9L5.1 10 2.5 7.4a.7.7 0 0 1 .6-1.2l2.3.3 3-3 .3-1.9a.7.7 0 0 1 1.2-.4Z"/></svg>';
+    };
+    var bellSvg = function (id) {
+      return '<svg class="bell" id="' + id + '" width="12" height="12" viewBox="0 0 16 16" fill="var(--t-yellow)"><path d="M8 1.5a.9.9 0 0 1 .9.9v.44a4.1 4.1 0 0 1 3.2 4v2.3l1 1.5a.6.6 0 0 1-.5.94H3.4a.6.6 0 0 1-.5-.94l1-1.5v-2.3a4.1 4.1 0 0 1 3.2-4V2.4a.9.9 0 0 1 .9-.9Zm0 12.9a1.7 1.7 0 0 1-1.6-1.2h3.2A1.7 1.7 0 0 1 8 14.4Z"/></svg>';
+    };
+
+    var st = {
+      order: ["co", "agent", "logs"],
+      sel: "co",
+      pinned: {}, bells: {}, notesFlag: {},
+      tabs: {
+        co: { name: "checkout revamp", path: "~/dev/app ⌥ feat/v2", cwd: "cwd ~/dev/app", screen: [], typing: true },
+        agent: { name: "agent · api", path: "~/dev/api ⌥ main", cwd: "cwd ~/dev/api", screen: [], typing: true },
+        logs: { name: "logs", path: "~/dev/api/logs", cwd: "cwd ~/dev/api/logs",
+          screen: ['<span class="dim2">tail -f access.log</span>',
+                   '<span class="dim2">200 GET /api/orders 41ms</span>',
+                   '<span class="dim2">200 POST /api/checkout 87ms</span>'],
+          typing: true },
+      },
+    };
+    var renderTabs = function () {
+      document.getElementById("tabs").innerHTML = st.order
+        .map(function (id) {
+          var t = st.tabs[id];
+          return (
+            '<div class="tab ' + (st.sel === id ? "sel" : "") + '" id="tab-' + id + '">' +
+            '<span class="dot"></span>' +
+            '<span class="m">' +
+            '<span class="n">' + t.name + pinGlyph("pin-" + id) + noteGlyph("ng-" + id) + "</span>" +
+            '<span class="p">' + t.path + "</span>" +
+            "</span>" + bellSvg("bell-" + id) + "</div>" +
+            '<div class="ins" id="ins-' + id + '"></div>'
+          );
+        })
+        .join("");
+      st.order.forEach(function (id) {
+        document.getElementById("pin-" + id).classList.toggle("show", !!st.pinned[id]);
+        document.getElementById("ng-" + id).classList.toggle("show", !!st.notesFlag[id]);
+        document.getElementById("bell-" + id).classList.toggle("show", !!st.bells[id]);
+      });
+    };
+    var screenEl = document.getElementById("screen");
+    var drawScreen = function () {
+      var t = st.tabs[st.sel];
+      screenEl.innerHTML =
+        t.screen.map(function (l) { return "<div>" + l + "</div>"; }).join("") +
+        (t.typing
+          ? "<div>" + PROMPT + " " + t.cwd.replace("cwd ", "") + ' $ <span class="caret"></span></div>'
+          : "");
+      document.getElementById("panetitle").textContent = t.name;
+      document.getElementById("wintitle").textContent = t.name;
+      document.getElementById("cwd").textContent = t.cwd;
+    };
+    var push = function (id, html) {
+      var sc = st.tabs[id].screen;
+      sc.push(html);
+      if (sc.length > 13) sc.shift();
+      if (st.sel === id) drawScreen();
+    };
+    var selectTab = function (id) {
+      st.sel = id;
+      if (st.bells[id]) {
+        delete st.bells[id];
+        document.getElementById("wait").classList.remove("show");
+      }
+      renderTabs();
+      drawScreen();
+    };
+
+    /* -- the notes panel -- */
+    var notesEl = document.getElementById("notes");
+    var noteRows = [];
+    var noteSel = -1;
+    var renderNotes = function () {
+      document.getElementById("notelist").innerHTML = noteRows
+        .map(function (r, i) {
+          return (
+            '<div class="note-row ' + (i === noteSel ? "sel" : "") + '" id="nrow-' + i + '">' +
+            '<span class="cdot ' + (r.color || "") + '"></span>' +
+            '<span class="nm"><div class="nn">' + r.name + (r.caret ? '<span class="ncaret"></span>' : "") +
+            '</div><div class="nt">' + r.time + "</div></span></div>"
+          );
+        })
+        .join("");
+      var t = st.tabs[st.sel];
+      document.getElementById("ntitle").textContent = noteRows.length
+        ? "NOTES : " + t.name + " : " + noteRows.length
+        : "NOTES : " + t.name;
+      document.getElementById("crumb").textContent =
+        noteRows.length && noteSel >= 0 ? t.name + " : " + noteRows[noteSel].name : "";
+    };
+    var noteLines = [];
+    var noteTypingLine = "";
+    var noteedEl = document.getElementById("noteed");
+    var drawNote = function (caret) {
+      noteedEl.innerHTML =
+        noteLines
+          .map(function (l) {
+            return "<div" + (l.cls ? ' class="' + l.cls + '"' : "") +
+              (l.id ? ' id="' + l.id + '"' : "") + ">" + l.html + "</div>";
+          })
+          .join("") +
+        (caret === false ? "" : "<div>" + noteTypingLine + '<span class="ncaret"></span></div>');
+    };
+
+    /* -- scenes -- */
+    var SCENES = [];
+    var scene = function (caption, build) {
+      var steps = [];
+      var t = 0;
+      var at = function (d, fn) { t += d; steps.push([t, fn]); };
+      var type = function (d, per, text, each, done) {
+        at(d, function () {});
+        for (var i = 1; i <= text.length; i++) {
+          (function (sfx) { at(per, function () { each(sfx); }); })(text.slice(0, i));
+        }
+        if (done) at(120, done);
+      };
+      build({ at: at, type: type });
+      SCENES.push({ caption: caption, steps: steps, total: t + 2400 });
+    };
+
+    // Scene 1: Claude runs in a tab. Also the reset every loop passes through.
+    scene(
+      "<b>Claude in a tab.</b> robin@mehdee runs Claude Code like any command. The session, folder and scrollback all persist.",
+      function (h) {
+        h.at(0, function () {
+          applyTheme("aura");
+          st.order = ["co", "agent", "logs"];
+          st.sel = "co";
+          st.pinned = {}; st.bells = {}; st.notesFlag = {};
+          st.tabs.co.screen = []; st.tabs.agent.screen = [];
+          st.tabs.co.typing = true;
+          notesEl.classList.remove("open");
+          document.getElementById("notebtn").classList.remove("active");
+          document.getElementById("wait").classList.remove("show");
+          hideCtx();
+          noteRows = []; noteSel = -1; renderNotes();
+          noteLines = []; noteTypingLine = ""; drawNote(false);
+          renderTabs(); drawScreen(); parkCursor();
+        });
+        h.type(500, 70, "claude", function (sfx) {
+          st.tabs.co.screen[0] = PROMPT + " ~/dev/app $ " + sfx;
+          drawScreen();
+        });
+        h.at(500, function () {
+          st.tabs.co.typing = false;
+          push("co", '<span class="dim2">╭──────────────────────────╮</span>');
+          push("co", '<span class="dim2">│</span> <span class="vi">✳ Claude Code</span> <span class="dim2">v2.1 · fable │</span>');
+          push("co", '<span class="dim2">╰──────────────────────────╯</span>');
+        });
+        h.at(700, function () { push("co", '<span class="dim2">❯</span> fix the flaky checkout test'); });
+        h.at(900, function () { push("co", '<span class="cy">●</span> Reading tests/checkout.spec.ts <span class="dim2">(218 lines)</span>'); });
+        h.at(900, function () { push("co", '<span class="cy">●</span> Edit src/checkout/flow.ts <span class="dim2">+6 −2</span>'); });
+        h.at(900, function () { push("co", '<span class="pr">✓</span> 48 passed <span class="dim2">· 0 failed · 3.1s</span>'); });
+      }
+    );
+
+    // Scene 2: switching; Claude finishes in the background and rings.
+    scene(
+      "<b>Instant switching.</b> One click, no delay: each tab keeps its own shell. Claude finishes in the background: bell, status count, Dock badge.",
+      function (h) {
+        h.at(500, function () { cursorTo("tab-agent"); });
+        h.at(600, function () {
+          clickFx();
+          selectTab("agent");
+          st.tabs.agent.screen = [
+            PROMPT + " ~/dev/api $ npm run agent",
+            '<span class="dim2">watching 3 queues…</span>',
+            '<span class="cy">●</span> processed 214 jobs',
+          ];
+          drawScreen();
+        });
+        h.at(1200, function () { cursorTo("tab-logs"); });
+        h.at(600, function () { clickFx(); selectTab("logs"); });
+        h.at(1000, function () {
+          st.bells.co = true;
+          renderTabs();
+          document.getElementById("wait").classList.add("show");
+          push("co", '<span class="yel">●</span> Claude is waiting: <span class="dim2">approve the edit?</span>');
+        });
+        h.at(1400, function () { cursorTo("tab-co"); });
+        h.at(600, function () { clickFx(); selectTab("co"); });
+      }
+    );
+
+    // Scene 3: pin from the context menu, then drag to reorder.
+    scene(
+      "<b>Pin and reorder, with the mouse.</b> Right click pins agent · api to the top. Then logs is dragged up, the line showing where it lands.",
+      function (h) {
+        h.at(500, function () { cursorTo("tab-agent"); });
+        h.at(550, function () {
+          clickFx("right");
+          showCtx([
+            { id: "pin", label: "Pin to Top" },
+            { id: "ren", label: "Rename" },
+            { id: "col", label: "Color" },
+            { id: "cls", label: "Close" },
+          ]);
+        });
+        h.at(700, function () { cursorTo("mi-pin"); });
+        h.at(500, function () {
+          var mi = document.getElementById("mi-pin");
+          if (mi) mi.classList.add("hot");
+        });
+        h.at(350, function () {
+          clickFx();
+          hideCtx();
+          st.pinned.agent = true;
+          st.order = ["agent"].concat(st.order.filter(function (x) { return x !== "agent"; }));
+          renderTabs();
+        });
+        h.at(1100, function () { cursorTo("tab-logs"); });
+        h.at(550, function () {
+          pressCursor(true);
+          document.getElementById("tab-logs").classList.add("lift");
+        });
+        h.at(500, function () { cursorTo("tab-co", 0.5, 0.1); });
+        h.at(450, function () { document.getElementById("ins-agent").classList.add("show"); });
+        h.at(650, function () {
+          pressCursor(false);
+          st.order = ["agent", "logs", "co"];
+          renderTabs();
+        });
+      }
+    );
+
+    // Scene 4: notes, end to end.
+    scene(
+      "<b>Notes for this tab.</b> Open the panel, + creates a note, name it, type a checklist, click a box to tick it, right click for a colour label.",
+      function (h) {
+        h.at(400, function () { selectTab("co"); cursorTo("notebtn"); });
+        h.at(550, function () {
+          clickFx();
+          document.getElementById("notebtn").classList.add("active");
+          notesEl.classList.add("open");
+          renderNotes();
+        });
+        h.at(700, function () { cursorTo("plusbtn"); });
+        h.at(550, function () {
+          clickFx();
+          var b = document.getElementById("plusbtn");
+          b.classList.add("press");
+          setTimeout(function () { b.classList.remove("press"); }, 250);
+          noteRows = [{ name: "Untitled", time: "just now", caret: true }];
+          noteSel = 0;
+          renderNotes();
+        });
+        h.type(500, 90, "Standup", function (sfx) { noteRows[0].name = sfx; renderNotes(); });
+        h.at(250, function () { noteRows[0].caret = false; renderNotes(); });
+        h.at(300, function () { cursorTo("noteed", 0.4, 0.25); });
+        h.type(300, 45, "Standup",
+          function (sfx) { noteTypingLine = '<span style="font-size:14px;font-weight:700">' + sfx + "</span>"; drawNote(); },
+          function () { noteLines.push({ html: "Standup", cls: "h" }); noteTypingLine = ""; drawNote(); });
+        h.type(250, 40, "- [ ] demo the notes panel",
+          function (sfx) { noteTypingLine = sfx.replace("- [ ]", '<span class="cb">- [ ]</span>'); drawNote(); },
+          function () { noteLines.push({ html: '<span class="cb">- [ ]</span> demo the notes panel', id: "nl-todo" }); noteTypingLine = ""; drawNote(); });
+        h.type(200, 40, "- [ ] ship 1.8.0",
+          function (sfx) { noteTypingLine = sfx.replace("- [ ]", '<span class="cb">- [ ]</span>'); drawNote(); },
+          function () { noteLines.push({ html: '<span class="cb">- [ ]</span> ship 1.8.0' }); noteTypingLine = ""; drawNote(false); });
+        h.at(600, function () { cursorTo("nl-todo", 0.06, 0.5); });
+        h.at(550, function () {
+          clickFx();
+          noteLines[1] = { html: '<span class="cb">- [x]</span> demo the notes panel', cls: "done", id: "nl-todo" };
+          drawNote(false);
+        });
+        h.at(800, function () { cursorTo("nrow-0"); });
+        h.at(550, function () {
+          clickFx("right");
+          showCtx([
+            { id: "ren", label: "Rename" },
+            { swatches: ["green", "cyan", "violet", "yellow"] },
+            { id: "del", label: "Delete" },
+          ]);
+        });
+        h.at(700, function () { cursorTo("sw-violet"); });
+        h.at(450, function () {
+          var sw = document.getElementById("sw-violet");
+          if (sw) sw.classList.add("hot");
+        });
+        h.at(350, function () {
+          clickFx();
+          hideCtx();
+          noteRows[0].color = "violet";
+          renderNotes();
+          st.notesFlag.co = true;
+          renderTabs();
+        });
+      }
+    );
+
+    // Scene 5: themes restyle the whole window.
+    scene(
+      "<b>Themes.</b> Pick a palette and the terminal, sidebar and notes all follow, light themes included. Nothing keeps its own colours.",
+      function (h) {
+        h.at(300, function () { parkCursor(); });
+        h.at(400, function () { applyTheme("dracula"); });
+        h.at(1600, function () { applyTheme("classic"); });
+        h.at(1700, function () { applyTheme("aura"); });
+      }
+    );
+
+    /* -- the projector -- */
+    var capEl = document.getElementById("cap");
+    var dotsEl = document.getElementById("dots");
+    dotsEl.innerHTML = SCENES.map(function (_, i) { return '<i id="dot' + i + '"></i>'; }).join("");
+
+    var scn = 0;
+    var timers = [];
+    var playing = true;
+    // Assumed true until the observer says otherwise, so the tour never waits
+    // on a callback that some embedded browsers simply do not deliver.
+    var visible = true;
+    var reduced =
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var clearTimers = function () {
+      timers.forEach(clearTimeout);
+      timers = [];
+    };
+    var run = function (i) {
+      clearTimers();
+      scn = i % SCENES.length;
+      SCENES.forEach(function (_, d) {
+        document.getElementById("dot" + d).classList.toggle("on", d === scn);
+      });
+      capEl.innerHTML = SCENES[scn].caption;
+      SCENES[scn].steps.forEach(function (step) {
+        timers.push(setTimeout(step[1], reduced ? 0 : step[0]));
+      });
+      if (playing && visible && !reduced) {
+        timers.push(setTimeout(function () { run(scn + 1); }, SCENES[scn].total));
+      }
+    };
+
+    document.getElementById("next").addEventListener("click", function () {
+      run(scn + 1);
+    });
+    var playBtn = document.getElementById("play");
+    playBtn.addEventListener("click", function () {
+      playing = !playing;
+      playBtn.textContent = playing ? "Pause" : "Play";
+      playBtn.setAttribute("aria-pressed", String(playing));
+      if (playing) run(scn);
+      else clearTimers();
+    });
+
+    if (reduced) {
+      playing = false;
+      playBtn.textContent = "Play";
+      playBtn.setAttribute("aria-pressed", "false");
+      cursorEl.style.opacity = "0";
+    }
 
     /*
-     * The highlight is a class on the target itself, not a positioned overlay.
-     *
-     * The overlay had to be measured, offset against the host, kept above the
-     * window's stacking context and faded in, and any one of those going wrong
-     * produced the same symptom: the caption updates and nothing appears. A
-     * class cannot miss, because there is no position to compute.
+     * Pause while the window is off screen, purely as a refinement: the tour
+     * starts playing regardless, and the observer only takes motion away from
+     * a window nobody can see. Scenes restart from the top of the current one
+     * when it scrolls back in, which is cheaper than pausing mid-flight and
+     * looks intentional rather than broken.
      */
-    var show = function (id) {
-      active = id;
-
-      var previous = host.querySelector("." + LIT);
-      if (previous) previous.classList.remove(LIT);
-
-      var target = id && host.querySelector('[data-tour="' + id + '"]');
-      var stop = STOPS.filter(function (s) { return s[0] === id; })[0];
-
-      if (!target || !stop) {
-        caption.textContent = "";
-      } else {
-        target.classList.add(LIT);
-
-        caption.textContent = "";
-        var strong = document.createElement("span");
-        strong.textContent = stop[1] + ". ";
-        caption.appendChild(strong);
-        caption.appendChild(document.createTextNode(stop[2]));
-
-        /*
-         * On a narrow screen the window is wider than the viewport and scrolls
-         * sideways, so the region being pointed at is often off-screen.
-         */
-        var scroller = host.parentElement;
-        if (scroller && scroller.scrollWidth > scroller.clientWidth) {
-          var sRect = scroller.getBoundingClientRect();
-          var tRect = target.getBoundingClientRect();
-          var wanted = tRect.left + tRect.width / 2 - (sRect.left + sRect.width / 2);
-          if (Math.abs(wanted) > 8) {
-            var reduce =
-              window.matchMedia &&
-              window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-            scroller.scrollBy({ left: wanted, behavior: reduce ? "auto" : "smooth" });
-          }
-        }
-      }
-
-      Array.prototype.forEach.call(stopList.children, function (li) {
-        var button = li.firstChild;
-        var on = button.getAttribute("data-id") === id;
-        button.setAttribute("aria-pressed", on ? "true" : "false");
-        button.classList.toggle("on", on);
-      });
-    };
-
-    var build = function () {
-      stopList.textContent = "";
-      STOPS.forEach(function (stop) {
-        var target = host.querySelector('[data-tour="' + stop[0] + '"]');
-        if (!target) return;
-        var r = target.getBoundingClientRect();
-        if (!r.width || !r.height) return;
-
-        var li = document.createElement("li");
-        var button = document.createElement("button");
-        button.type = "button";
-        button.textContent = stop[1];
-        button.setAttribute("data-id", stop[0]);
-        button.setAttribute("aria-pressed", "false");
-
-        /*
-         * Pointer events with an explicit mouse check, not mouseenter.
-         *
-         * A tap on iOS sends mouseover and mouseenter before it sends click.
-         * With a toggle on click, the sequence was: hover turns the ring on,
-         * click turns it straight back off. Every tap did nothing, which is
-         * exactly what this looked like on a phone.
-         *
-         * Filtering on pointerType means a finger never reaches the hover
-         * path, and click simply shows the region rather than toggling, so the
-         * behaviour is the same however it was triggered.
-         */
-        button.addEventListener("pointerenter", function (event) {
-          if (event.pointerType === "mouse") show(stop[0]);
-        });
-        button.addEventListener("pointerleave", function (event) {
-          if (event.pointerType === "mouse") show(null);
-        });
-        button.addEventListener("focus", function () { show(stop[0]); });
-        button.addEventListener("blur", function (event) {
-          // A tap focuses the button; hiding on blur would undo the tap when
-          // the next one is pressed. Only clear when moving on by keyboard.
-          if (event.relatedTarget || document.activeElement === document.body) {
-            show(null);
-          }
-        });
-        button.addEventListener("click", function () { show(stop[0]); });
-
-        li.appendChild(button);
-        stopList.appendChild(li);
-      });
-      if (active) show(active);
-    };
-
-    build();
-    window.addEventListener("resize", build);
-    // Fonts land after first paint and shift everything underneath.
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(build).catch(function () {});
+    if ("IntersectionObserver" in window && !reduced) {
+      new IntersectionObserver(
+        function (entries) {
+          var wasVisible = visible;
+          visible = entries[0].isIntersecting;
+          if (visible && !wasVisible && playing) run(scn);
+          if (!visible && wasVisible) clearTimers();
+        },
+        { threshold: 0.25 }
+      ).observe(demo);
     }
+    run(0);
   }
 
   /* ---------- back to top ---------- */
