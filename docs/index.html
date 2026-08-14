@@ -105,7 +105,7 @@
             "applicationCategory": "DeveloperApplication",
             "applicationSubCategory": "Terminal emulator",
             "operatingSystem": "macOS 14 (Sonoma) or later",
-            "softwareVersion": "1.7.3",
+            "softwareVersion": "1.8.0",
             "softwareRequirements": "macOS 14 (Sonoma) or later",
             "processorRequirements": "Apple Silicon or Intel, universal build",
             "downloadUrl": "https://github.com/rmehdee/auramux-releases/releases",
@@ -336,7 +336,7 @@
           />
           AuraMux
         </a>
-        <span class="pill" id="version-pill">v1.7.3 &middot; beta</span>
+        <span class="pill" id="version-pill">v1.8.0 &middot; beta</span>
         <span class="spacer"></span>
         <a class="quiet hide-xs" href="#features">Features</a>
         <a class="quiet hide-sm" href="#whats-new">What&rsquo;s new</a>
@@ -641,11 +641,44 @@
           <!-- whats-new:start -->
       <div class="rel-tabs" id="rel-tabs">
         <div class="rel-tablist" id="rel-tablist" aria-label="Releases" hidden>
+          <button class="rel-tab" type="button" data-rel="1-8-0">1.8.0</button>
           <button class="rel-tab" type="button" data-rel="1-7-3">1.7.3</button>
           <button class="rel-tab" type="button" data-rel="1-7-2">1.7.2</button>
           <button class="rel-tab" type="button" data-rel="1-7-1">1.7.1</button>
-          <button class="rel-tab" type="button" data-rel="1-7-0">1.7.0</button>
         </div>
+
+        <article class="rel" id="rel-1-8-0">
+          <h3 class="rel-v">1.8.0</h3>
+          <p class="rel-meta">
+            <time datetime="2026-08-14">14 August 2026</time>
+          </p>
+
+          <div class="rel-body">
+              <h4>Notes, kept with your project</h4>
+              <p>Click the note icon beside Split and a panel opens on the right. Press + to start a note, double click to name it, and write with live styling: headings, bold, checklists that tick when you click them, and Return that continues a list the way Apple Notes does.</p>
+              <p>One tab can hold as many notes as you like, a to-do, a plan, notes from a call. Drag to reorder them and right click for a colour label. The panel follows the folder your tab is in, and tabs with notes show a small note mark in the sidebar.</p>
+              <p>Notes are plain Markdown files saved inside your project folder under <code>.auramux/</code>, autosaved on the same rhythm as your terminal. Close the tab, reset the app, the files are still there and readable by any editor.</p>
+              <h4>Sleeker and faster</h4>
+              <p>Selecting notes and tabs is instant, with no click delay. Selection uses one calm style everywhere, colour now only appears where it means something, and the status bar finally follows your theme like the rest of the app. Buttons respond to hover, the editor caret takes your theme accent, and motion is reserved for things that move.</p>
+              <h4>Remote View hardened</h4>
+              <p>Disconnect is now final: ending a session revokes access, and the viewer cannot silently reconnect. The viewer also verifies which Mac it is talking to, so another machine on your network cannot pose as one of yours. Idle connections no longer cost anything on either side, watching stays smooth on long sessions, and the approval prompt counts down and expires on its own. Denying a request buys 45 seconds of quiet.</p>
+              <h4>Under the hood</h4>
+              <ul>
+                <li>Updates are now verified: the installer checks the download against a checksum before installing.</li>
+                <li>Permissions stick across updates from now on, no more re-granting Full Disk Access every release. One final round of permission prompts on this update is expected, then never again.</li>
+                <li>The update quit dialog now says Quit and Relaunch when an update is driving it.</li>
+                <li>The About screen credits founding contributors and got a cleaner layout.</li>
+              </ul>
+              <p>Update by pasting this into any terminal, including an AuraMux tab:</p>
+              <pre><code>curl -fsSL https://github.com/rmehdee/auramux-releases/releases/latest/download/install.sh | bash</code></pre>
+          </div>
+
+          <p class="rel-more">
+            <a href="https://github.com/rmehdee/auramux-releases/releases/tag/v1.8.0" target="_blank" rel="noopener"
+              >All of the 1.8.0 notes on GitHub &rarr;</a
+            >
+          </p>
+        </article>
 
         <article class="rel" id="rel-1-7-3">
           <h3 class="rel-v">1.7.3</h3>
@@ -713,31 +746,6 @@
           <p class="rel-more">
             <a href="https://github.com/rmehdee/auramux-releases/releases/tag/v1.7.1" target="_blank" rel="noopener"
               >All of the 1.7.1 notes on GitHub &rarr;</a
-            >
-          </p>
-        </article>
-
-        <article class="rel" id="rel-1-7-0">
-          <h3 class="rel-v">1.7.0</h3>
-          <p class="rel-meta">
-            <time datetime="2026-08-12">12 August 2026</time>
-          </p>
-
-          <div class="rel-body">
-              <h4>Remote View</h4>
-              <p>Watch a session running on another Mac on the same network.</p>
-              <p>Turn on <strong>Remote</strong> in the sidebar of the Mac you want to watch. On your own Mac it appears under Remote. Click it, and a six digit code shows. Type that code on the other Mac to approve, and its sessions appear in your sidebar.</p>
-              <p><strong>View only.</strong> You can read output and scroll back. You cannot type, and you cannot start, close or rename anything over the connection.</p>
-              <p><strong>Nothing is shared until someone approves it.</strong> The code is shown on the asking Mac and never sent over the network, so approving requires seeing that screen. The approval prompt names the person, device, model and versions, and warns that anything visible in a session becomes readable, including keys and passwords.</p>
-              <p><strong>The watched Mac always shows it.</strong> A strip names who is viewing, with a one click disconnect.</p>
-              <p><strong>Reconnects on its own</strong> after sleep, a wifi drop or a network change, and returns you to the session you were watching. Approval never survives either app quitting, so a fresh code is needed after that.</p>
-              <p>Local network only. No accounts, no servers, nothing to pay for. Off until you turn it on.</p>
-              <p>macOS will ask for local network permission the first time. Discovery will not work without it.</p>
-          </div>
-
-          <p class="rel-more">
-            <a href="https://github.com/rmehdee/auramux-releases/releases/tag/v1.7.0" target="_blank" rel="noopener"
-              >All of the 1.7.0 notes on GitHub &rarr;</a
             >
           </p>
         </article>
