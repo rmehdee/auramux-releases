@@ -899,21 +899,26 @@ section:first-of-type {
   background: var(--t-green);
   color: #06120c;
 }
+/* The colour row reads as a PALETTE, not a control: spaced circles between hairlines.
+   Packed tight it looked like a broken toggle switch sitting over the menu items. */
 #ctx .sw {
   display: flex;
-  gap: 5px;
-  padding: 4px 9px;
+  gap: 9px;
+  padding: 6px 9px;
+  margin: 3px 0;
+  border-top: 1px solid var(--s-line);
+  border-bottom: 1px solid var(--s-line);
 }
 #ctx .sw i {
-  width: 11px;
-  height: 11px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   display: block;
-  border: 1px solid transparent;
-  transition: transform 0.15s;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: transform 0.15s, border-color 0.15s;
 }
 #ctx .sw i.hot {
-  transform: scale(1.35);
+  transform: scale(1.2);
   border-color: #fff;
 }
 
