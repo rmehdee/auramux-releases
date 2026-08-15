@@ -251,6 +251,23 @@
     $("live").classList.add("on");
   }
 
+  // ---------- liveness probe: a dead link says so immediately ----------
+  // Links expire when sharing stops, so a refresh after the end must show "gone", not ask for a
+  // name. One stateless GET: the relay answers from its live socket registry, nothing is stored
+  // anywhere. If the probe itself fails (odd network), fall through to the gate; the join path
+  // still handles a dead room.
+  const httpRelay = relayBase.replace(/^ws/, "http");
+  function showOffline() {
+    showState("◼ STREAM OFFLINE",
+              "This link is not live. Links expire when sharing stops,<br>so this one is gone for good. Ask for a fresh link.");
+  }
+  if (roomOK && linkKey) {
+    fetch(`${httpRelay}/status/${room}`)
+      .then((r) => r.json())
+      .then((st) => { if (!st.live && $("gate").hidden === false) showOffline(); })
+      .catch(() => {});
+  }
+
   // ---------- the gate ----------
   const nameInput = $("name"), goBtn = $("go"), codeInput = $("code");
   if (codeRequired) $("codeRow").hidden = false;
@@ -347,8 +364,7 @@
       // patient answer: keep knocking quietly. If the host comes back, so does the stream.
       retries += 1;
       if (retries > MAX_RETRIES) {
-        showState("◼ STREAM OFFLINE",
-                  "The stream is not reachable.<br>It may have ended, or the host may be offline.");
+        showOffline();
         return;
       }
       setTitle(sawEnd || e.code === 4404 ? "waiting for the host" : "reconnecting", true);
