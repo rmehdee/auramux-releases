@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>AuraMux · Live</title>
+<style>
+  /* The terminal's own world: committed dark, one green accent, mono everywhere. */
+  :root {
+    --bg: #070B09; --panel: #0C120F; --deep: #090E0B;
+    --line: #1B2620; --line-soft: #141D18;
+    --text: #DBEAE1; --dim: #6F8278; --faint: #47554D;
+    --green: #2FE08C; --green-soft: rgba(47,224,140,.13);
+    --red: #E86A6A; --amber: #E5B45B;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--mono); }
+
+  .app { display: flex; flex-direction: column; height: 100%; }
+
+  /* ---------- top bar ---------- */
+  .top {
+    display: flex; align-items: center; gap: 9px; height: 40px; padding: 0 14px;
+    background: var(--deep); border-bottom: 1px solid var(--line-soft);
+    font-size: 12px; color: var(--dim); flex: none;
+  }
+  .top .mark { color: var(--green); font-weight: 700; text-shadow: 0 0 10px rgba(47,224,140,.5); }
+  .top .word { letter-spacing: .22em; color: var(--text); font-size: 11px; }
+  .top .title { color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .livechip { display: none; align-items: center; gap: 6px; color: var(--green); letter-spacing: .05em; font-size: 11px; }
+  .livechip.on { display: flex; }
+  .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pul 1.6s infinite; }
+  @keyframes pul { 0%,100% { box-shadow: 0 0 0 0 rgba(47,224,140,.5);} 55% { box-shadow: 0 0 0 6px rgba(47,224,140,0);} }
+  .stack { display: flex; align-items: center; margin-left: auto; }
+  .stack .av { margin-left: -6px; border: 2px solid var(--deep); border-radius: 50%; }
+  .stack .av:first-child { margin-left: 0; }
+  .stack .count { font-size: 10px; color: var(--dim); margin-left: 8px; white-space: nowrap; }
+  .e2e {
+    font-size: 9px; letter-spacing: .12em; color: var(--green); margin-left: 12px;
+    border: 1px solid rgba(47,224,140,.3); border-radius: 3px; padding: 3px 7px;
+    background: var(--green-soft); white-space: nowrap;
+  }
+
+  /* ---------- terminal ---------- */
+  .term { flex: 1; overflow-y: auto; padding: 14px 16px; }
+  .term pre {
+    margin: 0; font-family: var(--mono); font-size: 12.5px; line-height: 1.55;
+    white-space: pre-wrap; word-break: break-word; color: var(--text);
+  }
+
+  /* ---------- footer ---------- */
+  .foot {
+    display: flex; align-items: center; height: 28px; padding: 0 14px; flex: none;
+    border-top: 1px solid var(--line-soft); background: var(--deep);
+    font-size: 9px; letter-spacing: .14em; color: var(--faint);
+  }
+  .foot .rc { margin-left: auto; }
+  .foot .rc b { color: var(--amber); font-weight: 600; }
+
+  /* ---------- overlays ---------- */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(7,11,9,.97); display: grid;
+    place-items: center; z-index: 10; padding: 20px;
+  }
+  .overlay[hidden] { display: none; }
+  .card { width: 100%; max-width: 340px; text-align: center; }
+  .card .gm { font-size: 30px; font-weight: 700; color: var(--green); text-shadow: 0 0 16px rgba(47,224,140,.5); }
+  .card .word2 { font-size: 12px; letter-spacing: .32em; color: var(--text); margin-top: 8px; }
+  .card h1 { font-size: 14px; font-weight: 600; letter-spacing: .05em; margin: 18px 0 6px; color: var(--text); }
+  .card p { font-size: 11px; color: var(--dim); line-height: 1.7; margin: 0 0 18px; }
+  .row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .gav {
+    width: 36px; height: 36px; flex: none; border-radius: 50%;
+    background: var(--panel); border: 1px dashed var(--line); overflow: hidden;
+  }
+  .gav svg { display: block; }
+  .card input {
+    flex: 1; min-width: 0; background: var(--deep); border: 1px solid var(--line);
+    border-radius: 7px; padding: 10px 12px; font-size: 13px; color: var(--text);
+    font-family: var(--mono); outline: none;
+  }
+  .card input:focus { border-color: rgba(47,224,140,.5); }
+  .card input::placeholder { color: var(--faint); text-transform: none; letter-spacing: normal; }
+  button.go {
+    width: 100%; padding: 10px 0; border: none; border-radius: 7px;
+    background: var(--green); color: #06110B; font-weight: 700; font-size: 12.5px;
+    letter-spacing: .05em; font-family: var(--mono); cursor: pointer;
+    opacity: .35; pointer-events: none; transition: opacity .25s;
+  }
+  button.go.ready { opacity: 1; pointer-events: auto; }
+  .fine { font-size: 9.5px; color: var(--faint); line-height: 1.7; margin-top: 14px; }
+  .gerr { font-size: 10px; color: var(--red); margin: -4px 0 12px; }
+  .bigstate { font-size: 13px; letter-spacing: .3em; color: var(--dim); margin-bottom: 12px; }
+  .substate { font-size: 10.5px; color: var(--faint); line-height: 1.8; }
+  .spin { color: var(--green); animation: blink 1.2s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: .25; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <span class="mark">&gt;_</span><span class="word">AURAMUX</span>
+    <span class="title" id="title"></span>
+    <span class="livechip" id="live"><span class="pulse"></span>LIVE</span>
+    <span class="stack" id="stack"></span>
+    <span class="e2e">E2E</span>
+  </div>
+  <div class="term" id="scroller"><pre id="text"></pre></div>
+  <div class="foot">VIEW ONLY · ENCRYPTED END TO END<span class="rc">REQUEST CONTROL · <b>SOON</b></span></div>
+</div>
+
+<div class="overlay" id="gate">
+  <div class="card">
+    <div class="gm">&gt;_</div>
+    <div class="word2">AURAMUX</div>
+    <h1 id="gateTitle">Live session</h1>
+    <p>You have been invited to watch this terminal session, live and view only.</p>
+    <div class="row">
+      <span class="gav" id="gav"></span>
+      <input id="name" type="text" placeholder="your name" maxlength="24" autocomplete="name" spellcheck="false">
+    </div>
+    <div class="row" id="codeRow" hidden>
+      <input id="code" type="text" placeholder="access code" maxlength="9" autocomplete="off"
+             spellcheck="false" style="text-transform: uppercase; letter-spacing: .15em;">
+    </div>
+    <div class="gerr" id="gateErr" hidden></div>
+    <button class="go" id="go">Watch Stream</button>
+    <div class="fine">Your name and avatar are shown to the person sharing<br>and to other viewers. Nothing is stored.</div>
+  </div>
+</div>
+
+<div class="overlay" id="state" hidden>
+  <div class="card">
+    <div class="bigstate" id="stateTitle"></div>
+    <div class="substate" id="stateBody"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  const RELAY_DEFAULT = "wss://auramux-relay.rmehdee.workers.dev";
+  const $ = (id) => document.getElementById(id);
+
+  // ---------- link parsing: everything secret stays in the fragment ----------
+  const params = new URLSearchParams(location.search);
+  const relayBase = params.get("relay") || RELAY_DEFAULT;   // dev override; ciphertext either way
+  // One unbroken 59 character token: 16 room chars, then 43 key chars. Fixed offsets, no
+  // separator. A trailing "c" (60th character) means the host also requires an access code;
+  // the marker reveals only that a code exists, never anything about it.
+  const frag = location.hash.slice(1);
+  const codeRequired = frag.length === 60 && frag.endsWith("c");
+  const token = codeRequired ? frag.slice(0, 59) : frag;
+  const room = token.slice(0, 16);
+  const keyB64 = token.slice(16);
+  const roomOK = token.length === 59 && /^[a-z2-7]{16}$/.test(room);
+
+  const b64uDecode = (s) => {
+    s = s.replace(/-/g, "+").replace(/_/g, "/");
+    while (s.length % 4) s += "=";
+    const bin = atob(s);
+    return Uint8Array.from(bin, (c) => c.charCodeAt(0));
+  };
+  const b64Encode = (bytes) => btoa(String.fromCharCode(...bytes));
+  const b64Decode = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+
+  let linkKey = null;
+  try { linkKey = b64uDecode(keyB64); } catch { linkKey = null; }
+  if (!roomOK || !linkKey || linkKey.length !== 32) {
+    showState("◼ BAD LINK", "This link is incomplete or damaged.<br>Ask for it to be sent again.");
+  }
+
+  // ---------- avatars: identical function to the host app, parity is pinned there ----------
+  const GRADS = [["#7C5CFF","#3EC8FF"],["#FF7A59","#FFC24B"],["#2FE08C","#2E9BFF"],
+                 ["#FF5C8A","#FFB03A"],["#3ED6C0","#7C5CFF"],["#E5B45B","#E86A6A"]];
+  let gid = 0;
+  function avatarSVG(name, size) {
+    let h = 0;
+    for (const ch of name) h = (h * 31 + ch.codePointAt(0)) >>> 0;
+    const [c1, c2] = GRADS[h % GRADS.length];
+    const initials = name.trim().split(/\s+/).map((w) => [...w][0]).slice(0, 2).join("").toUpperCase();
+    const id = "g" + (gid++);
+    return `<svg class="av" width="${size}" height="${size}" viewBox="0 0 32 32">` +
+      `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1">` +
+      `<stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs>` +
+      `<circle cx="16" cy="16" r="16" fill="url(#${id})"/>` +
+      `<text x="16" y="21" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" ` +
+      `font-weight="700" fill="rgba(6,17,11,.85)">${escapeHTML(initials)}</text></svg>`;
+  }
+  function escapeHTML(s) {
+    return s.replace(/[&<>"']/g, (c) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+  }
+
+  // ---------- crypto: WebCrypto mirror of the app's WebShareCrypto ----------
+  const enc = new TextEncoder(), dec = new TextDecoder();
+  let hostAES = null, viewerAES = null;
+  // The access code is HKDF salt, identically to the app: a wrong code derives wrong keys and no
+  // frame ever decrypts. Nothing here compares codes, so nothing here can be skipped.
+  const normalizeCode = (raw) => raw.toUpperCase().replace(/[^A-Z2-7]/g, "");
+  async function deriveKeys(code) {
+    const salt = code ? enc.encode("auramux.webshare.code.v1|" + normalizeCode(code)) : new Uint8Array(0);
+    const master = await crypto.subtle.importKey("raw", linkKey, "HKDF", false, ["deriveKey"]);
+    const derive = (info, usages) => crypto.subtle.deriveKey(
+      { name: "HKDF", hash: "SHA-256", salt, info: enc.encode(info) },
+      master, { name: "AES-GCM", length: 256 }, false, usages);
+    hostAES = await derive("auramux.webshare.host.v1", ["decrypt"]);
+    viewerAES = await derive("auramux.webshare.viewer.v1", ["encrypt"]);
+  }
+
+  let lastSeq = null;
+  async function openHostFrame(seq, boxB64) {
+    const box = b64Decode(boxB64);
+    if (box.length < 12 + 16) throw new Error("short");
+    if (lastSeq !== null && seq <= lastSeq) throw new Error("stale");
+    // The nonce must BE the claimed sequence (4 zero bytes + big endian u64), or the envelope's
+    // number would be a label anyone could rewrite.
+    const iv = box.slice(0, 12);
+    let n = 0n;
+    for (const b of iv) n = (n << 8n) | BigInt(b);
+    if (n !== BigInt(seq)) throw new Error("nonce mismatch");
+    const plain = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv, additionalData: enc.encode(room) }, hostAES, box.slice(12));
+    lastSeq = seq;
+    return JSON.parse(dec.decode(plain));
+  }
+
+  async function sealViewerMessage(obj) {
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = new Uint8Array(await crypto.subtle.encrypt(
+      { name: "AES-GCM", iv, additionalData: enc.encode(room) }, viewerAES,
+      enc.encode(JSON.stringify(obj))));
+    const combined = new Uint8Array(iv.length + ct.length);
+    combined.set(iv); combined.set(ct, iv.length);
+    return b64Encode(combined);
+  }
+
+  // ---------- states ----------
+  function showState(title, bodyHTML) {
+    $("gate").hidden = true;
+    $("state").hidden = false;
+    $("stateTitle").innerHTML = title;
+    $("stateBody").innerHTML = bodyHTML;
+    $("live").classList.remove("on");
+  }
+  function showLive() {
+    $("state").hidden = true;
+    $("gate").hidden = true;
+    $("live").classList.add("on");
+  }
+
+  // ---------- the gate ----------
+  const nameInput = $("name"), goBtn = $("go"), codeInput = $("code");
+  if (codeRequired) $("codeRow").hidden = false;
+  const cleanName = () => nameInput.value.replace(/\s+/g, " ").trim().slice(0, 24);
+  const ready = () => cleanName().length > 0 && (!codeRequired || normalizeCode(codeInput.value).length > 0);
+  const refresh = () => {
+    goBtn.classList.toggle("ready", ready());
+    const n = cleanName();
+    $("gav").innerHTML = n ? avatarSVG(n, 34) : "";
+    $("gav").style.borderStyle = n ? "solid" : "dashed";
+    $("gav").style.borderColor = n ? "transparent" : "";
+  };
+  nameInput.addEventListener("input", refresh);
+  codeInput.addEventListener("input", () => { $("gateErr").hidden = true; refresh(); });
+  const enter = (e) => { if (e.key === "Enter" && ready()) start(); };
+  nameInput.addEventListener("keydown", enter);
+  codeInput.addEventListener("keydown", enter);
+  goBtn.addEventListener("click", start);
+
+  // ---------- the stream ----------
+  let ws = null;
+  let myName = "";
+  let endedForGood = false;   // only an AUTHENTICATED ended payload sets this
+  let validated = !codeRequired;   // with a code, only a successfully decrypted frame proves it
+  let retries = 0;
+  const MAX_RETRIES = 40;     // × 4.5s ≈ 3 minutes of patience
+
+  async function start() {
+    myName = cleanName();
+    if (!ready() || !linkKey) return;
+    await deriveKeys(codeRequired ? codeInput.value : null);
+    goBtn.textContent = codeRequired ? "checking code…" : "connecting…";
+    connect(true);
+  }
+
+  function wrongCode() {
+    try { ws.close(1000); } catch {}
+    validated = false;
+    $("gate").hidden = false;
+    $("gateErr").textContent = "That code is not right. Check it and try again.";
+    $("gateErr").hidden = false;
+    goBtn.textContent = "Watch Stream";
+    $("live").classList.remove("on");
+  }
+
+  function connect(fresh) {
+    if (endedForGood) return;
+    if (fresh && validated) { showLive(); setTitle("connecting", true); }
+    ws = new WebSocket(`${relayBase}/join/${room}`);
+    let sawEnd = false;
+
+    ws.addEventListener("open", async () => {
+      retries = 0;
+      lastSeq = null;   // a new relay connection is a new stream position
+      ws.send(JSON.stringify({ t: "u", d: await sealViewerMessage({ type: "hello", name: myName }) }));
+    });
+
+    ws.addEventListener("message", async (e) => {
+      let env;
+      try { env = JSON.parse(e.data); } catch { return; }
+      if (env.t === "b" && typeof env.d === "string" && typeof env.s === "number") {
+        let frame;
+        try { frame = await openHostFrame(env.s, env.d); }
+        catch (err) {
+          // Before validation, a failed decrypt IS the answer: the code was wrong. After it,
+          // an unauthentic frame is noise to ignore (stale ordering is expected mid-reconnect).
+          if (!validated && err.message !== "stale") wrongCode();
+          return;
+        }
+        if (!validated) { validated = true; showLive(); }
+        if (frame.type === "snapshot") {
+          setTitle(frame.title || "session", false);
+          render(frame.text || "");
+        } else if (frame.type === "roster") {
+          renderRoster(Array.isArray(frame.viewers) ? frame.viewers : []);
+        } else if (frame.type === "ended") {
+          endedForGood = true;
+          showState("◼ SHARE ENDED",
+                    "The person sharing stopped the stream.<br>This link is dead for everyone. Nothing was stored.");
+          try { ws.close(1000); } catch {}
+        }
+      } else if (env.t === "end") {
+        sawEnd = true;   // relay-level: the host socket vanished; NOT proof the share was ended
+      }
+    });
+
+    ws.addEventListener("close", (e) => {
+      if (endedForGood || !validated) return;
+      if (e.code === 4429) {
+        showState("◼ ROOM FULL", "This stream already has its maximum number of viewers.");
+        return;
+      }
+      // 4404 (nothing live), a vanished host (sawEnd), or a network drop all get the same
+      // patient answer: keep knocking quietly. If the host comes back, so does the stream.
+      retries += 1;
+      if (retries > MAX_RETRIES) {
+        showState("◼ STREAM OFFLINE",
+                  "The stream is not reachable.<br>It may have ended, or the host may be offline.");
+        return;
+      }
+      setTitle(sawEnd || e.code === 4404 ? "waiting for the host" : "reconnecting", true);
+      setTimeout(() => connect(false), 4500);
+    });
+  }
+
+  // ---------- rendering ----------
+  const scroller = $("scroller"), textEl = $("text");
+  function render(text) {
+    const nearBottom = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < 60;
+    textEl.textContent = text;   // textContent: the stream can never become markup here
+    if (nearBottom) scroller.scrollTop = scroller.scrollHeight;
+  }
+  function setTitle(t, busy) {
+    $("title").textContent = "· " + t;
+    $("gateTitle").textContent = t;
+    document.title = "AuraMux · " + t;
+    $("title").classList.toggle("spin", !!busy);
+  }
+  function renderRoster(viewers) {
+    const shown = viewers.slice(0, 8);
+    $("stack").innerHTML =
+      shown.map((v) => avatarSVG(String(v.name || "?").slice(0, 24), 20)).join("") +
+      `<span class="count">${viewers.length} watching</span>`;
+  }
+
+  // ---------- keepalive: answered by the relay runtime without waking the room ----------
+  setInterval(() => {
+    if (ws && ws.readyState === WebSocket.OPEN) ws.send('{"t":"ping"}');
+  }, 45000);
+})();
+</script>
+</body>
+</html>
