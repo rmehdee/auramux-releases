@@ -448,16 +448,18 @@
         h.at(800, function () { cursorTo("nrow-0"); });
         h.at(550, function () {
           clickFx("right");
+          /* Text items only: swatch circles fused into a toggle-looking blob once the demo
+             scaled down on phones. The colour change itself tells the story. */
           showCtx([
             { id: "ren", label: "Rename" },
-            { swatches: ["green", "cyan", "violet", "yellow"] },
+            { id: "col", label: "Colour" },
             { id: "del", label: "Delete" },
           ]);
         });
-        h.at(700, function () { cursorTo("sw-violet"); });
+        h.at(700, function () { cursorTo("mi-col"); });
         h.at(450, function () {
-          var sw = document.getElementById("sw-violet");
-          if (sw) sw.classList.add("hot");
+          var mi = document.getElementById("mi-col");
+          if (mi) mi.classList.add("hot");
         });
         h.at(350, function () {
           clickFx();
