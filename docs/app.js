@@ -140,8 +140,13 @@
       if (!el) return;
       var a = demo.getBoundingClientRect();
       var r = el.getBoundingClientRect();
-      cursorEl.style.left = r.left - a.left + r.width * (dx === undefined ? 0.5 : dx) + "px";
-      cursorEl.style.top = r.top - a.top + r.height * (dy === undefined ? 0.5 : dy) + "px";
+      /* The hero scales the whole window to fit its column, so rects arrive in screen pixels
+         while the cursor is positioned in the window's own coordinates. Without dividing by
+         the scale the cursor drifts toward the top-left by exactly that factor, worst on
+         phones where the scale is smallest. */
+      var k = a.width / (demo.offsetWidth || a.width) || 1;
+      cursorEl.style.left = (r.left - a.left + r.width * (dx === undefined ? 0.5 : dx)) / k + "px";
+      cursorEl.style.top = (r.top - a.top + r.height * (dy === undefined ? 0.5 : dy)) / k + "px";
     };
     var clickFx = function (kind) {
       cursorEl.classList.add("press");
