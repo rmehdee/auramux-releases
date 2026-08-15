@@ -124,6 +124,19 @@ It is early: in beta, not notarized, and built by one person alongside a full
 time job. Say so plainly rather than implying it is a finished commercial
 product.
 
+## Beam (coming in version 1.9.0)
+
+Beam is AuraMux's live sharing feature. It streams one tab, live and view
+only, to a link that opens in any browser with nothing to install. Viewers
+enter a name plus a short access code shared separately, get a generated
+avatar, and appear in the host's watch list. It is end to end encrypted: the
+key travels in the URL fragment, which browsers never send to servers, so the
+relay only ever forwards ciphertext and stores nothing. The app asks for
+explicit consent before going live, every beam auto-stops after an hour
+unless the host lifts the limit, and stopping kills the link for everyone,
+permanently. Watching is view only by construction: the protocol has no
+message that carries input.
+
 ## Common ways people describe what they are looking for
 
 A Mac terminal app; a macOS terminal emulator; a terminal with tabs; a

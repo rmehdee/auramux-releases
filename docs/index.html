@@ -124,6 +124,7 @@
             },
             "description": "A native macOS terminal for running AI coding CLIs across many long-lived sessions. One tab per session, split view, session restore, a status badge on any session that finishes or is waiting for input, and notes kept as Markdown files in the project folder.",
             "featureList": [
+              "Beam, coming in 1.9.0: stream one tab live, view only and end to end encrypted, to any browser",
               "One tab per session with git branch and dirty state",
               "Status badge on sessions waiting for input or with new output",
               "Dock badge counting sessions waiting for input",
@@ -332,6 +333,30 @@
         "@type": "Answer",
         "text": "AuraMux is ad-hoc signed but not notarized yet, since notarization needs a paid Apple Developer account and that is a post-beta job. A browser download gets flagged by Gatekeeper. Installing with curl avoids it because curl never attaches the quarantine attribute Gatekeeper checks for. Nothing is bypassed or stripped."
       }
+    },
+    {
+      "@type": "Question",
+      "name": "What is Beam?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Beam is AuraMux's live sharing feature, coming in version 1.9.0. It streams one tab, live and view only, to a link anyone can open in a browser with nothing to install. Viewers enter a name and a short access code shared separately, and appear in the host's watch list. Stopping kills the link for everyone permanently."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is Beam secure? Can the server read the terminal?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Beam is end to end encrypted. The decryption key travels only in the URL fragment after the #, which browsers never send to any server, and the access code is mixed into the encryption keys. The relay forwards ciphertext it cannot read and stores nothing. The app shows a consent warning before going live, and every beam stops itself after an hour unless the host lifts the limit."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can viewers type into a beamed terminal?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. The protocol has no message that carries input, so watching is view only by construction. Remote control may arrive later as a separate, explicitly granted capability."
+      }
     }
   ]
 }
@@ -360,7 +385,8 @@
         <span class="pill" id="version-pill">v1.8.1 &middot; beta</span>
         <span class="spacer"></span>
         <a class="quiet hide-xs" href="#features">Features</a>
-        <a class="quiet hide-sm" href="#whats-new">What&rsquo;s new</a>
+        <a class="quiet hide-xs" href="#beam">Beam</a>
+        <a class="quiet hide-sm" href="#whats-new">What&rsquo;s new<span class="nav-dot" aria-hidden="true"></span></a>
         <a class="quiet hide-xs" href="#reviews">Reviews</a>
         <a class="quiet hide-xs" href="#faq">FAQ</a>
         <a
@@ -372,7 +398,8 @@
 
     <main id="main">
       <section class="hero">
-        <div class="wrap">
+        <div class="wrap hero-beam">
+          <div class="hero-copy">
           <img
             class="appicon"
             src="/icon-256.png"
@@ -381,6 +408,8 @@
             alt="The AuraMux app icon"
             decoding="async"
           />
+
+          <p class="slogan"><b>&gt;_</b>&nbsp; THIS IS TERMINAL LIFE</p>
 
           <h1>Ten sessions, one sidebar, nothing to configure.</h1>
 
@@ -404,11 +433,8 @@
             Intel. Free, in beta, no account.
             <span class="badge hidden" id="installs-badge"></span>
           </p>
-        </div>
-      </section>
-
-      <section aria-label="The interface">
-        <div class="wrap">
+          </div>
+          <div class="hero-demo" aria-label="AuraMux in motion">
           <!--
             A scripted walkthrough of the interface, driven by an animated
             pointer: switching sessions, pinning from the context menu,
@@ -519,8 +545,773 @@
           </div>
 
           <p class="demo-foot" id="themefoot">Theme: Aura (default)</p>
+          </div>
         </div>
       </section>
+      <script>
+        (function () {
+          var holder = document.querySelector(".hero-demo .shot-scroll");
+          if (!holder || !holder.firstElementChild) return;
+          var win = holder.firstElementChild;
+          win.style.transformOrigin = "top left";
+          function fit() {
+            var k = Math.min(1, holder.clientWidth / win.offsetWidth);
+            win.style.transform = k < 1 ? "scale(" + k + ")" : "";
+            holder.style.height = k < 1 ? win.offsetHeight * k + "px" : "";
+          }
+          window.addEventListener("resize", fit);
+          if (window.ResizeObserver) new ResizeObserver(fit).observe(win);
+          fit();
+        })();
+      </script>
+
+<!-- ============================================================================
+     Beam section for auramux.com: the coming-soon teaser for the live sharing
+     feature (ships in 1.9.0). Self contained: scoped CSS (native nesting under
+     #beam), namespaced ids, animation starts only when scrolled into view.
+============================================================================= -->
+<section id="beam">
+<style>
+  #beam, .hero-demo {
+    --mktg-max: 1140px;
+
+  /* Committed single dark theme: this is the terminal's own world. */
+  * { box-sizing: border-box; }
+
+  & {
+    --bg: #070B09;
+    --panel: #0C120F;
+    --panel-deep: #090E0B;
+    --line: #1B2620;
+    --line-soft: #141D18;
+    --text: #DBEAE1;
+    --dim: #6F8278;
+    --faint: #47554D;
+    --green: #2FE08C;
+    --green-soft: rgba(47, 224, 140, .13);
+    --red: #E86A6A;
+    --amber: #E5B45B;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+
+
+  /* ---------- header ---------- */
+  .hd { display: flex; align-items: flex-end; gap: 16px; margin-bottom: 8px; }
+  .hd .mark {
+    font-size: 30px; font-weight: 700; color: var(--green);
+    text-shadow: 0 0 18px rgba(47,224,140,.55);
+  }
+  .hd .word { font-size: 19px; font-weight: 600; letter-spacing: .38em; }
+  .hd .sub { font-size: 10px; letter-spacing: .22em; color: var(--dim); margin-top: 5px; }
+  .hd .phase {
+    margin-left: auto; font-size: 9.5px; letter-spacing: .18em; color: var(--green);
+    border: 1px solid rgba(47,224,140,.35); border-radius: 3px; padding: 4px 9px;
+    background: var(--green-soft); white-space: nowrap;
+  }
+
+  .narr {
+    height: 18px; margin: 22px 0 14px; font-size: 11px; color: var(--dim);
+    letter-spacing: .04em; transition: opacity .4s;
+  }
+  .narr b { color: var(--text); font-weight: 600; }
+
+  /* ---------- stage ---------- */
+  .stage-scroll { overflow: hidden; margin: 0; padding: 0; }
+  .stage { position: relative; width: 1084px; height: 566px; margin: 0; transform-origin: top left; }
+  .stage::before {
+    content: ""; position: absolute; inset: -40px;
+    background: radial-gradient(closest-side at 46% 42%, rgba(47,224,140,.055), transparent 75%);
+    pointer-events: none;
+  }
+
+  .win {
+    position: absolute; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--panel); overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0,0,0,.55), 0 2px 10px rgba(0,0,0,.4);
+  }
+  .tbar {
+    display: flex; align-items: center; gap: 7px; height: 34px; padding: 0 12px;
+    background: var(--panel-deep); border-bottom: 1px solid var(--line-soft);
+    font-size: 10.5px; color: var(--dim);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot.r { background: #5c3e3e; } .dot.y { background: #5c553e; } .dot.g { background: #3e5c49; }
+  .tbar .ttl { margin: 0 auto; letter-spacing: .06em; }
+  .tbar .sp { width: 44px; }
+
+  /* ---------- avatars ---------- */
+  .av { border-radius: 50%; display: inline-block; vertical-align: middle; flex: none; }
+
+  /* ---------- host app window ---------- */
+  .app { left: 0; top: 24px; width: 632px; height: 492px; z-index: 2; }
+  .app-body { display: flex; height: calc(100% - 34px); }
+
+  .side {
+    width: 168px; background: var(--panel-deep); border-right: 1px solid var(--line-soft);
+    padding: 10px 8px; flex: none;
+  }
+  .side .lbl { font-size: 8.5px; letter-spacing: .2em; color: var(--faint); padding: 2px 8px 8px; }
+  .srow {
+    display: flex; align-items: center; gap: 7px; padding: 7px 9px; border-radius: 6px;
+    font-size: 11px; color: var(--dim); margin-bottom: 2px;
+  }
+  .srow.on { background: #131B16; color: var(--text); }
+  .srow .sdot { width: 6px; height: 6px; border-radius: 50%; background: var(--faint); flex: none; }
+  .srow.on .sdot { background: var(--green); box-shadow: 0 0 6px rgba(47,224,140,.7); }
+  .srow .nt { margin-left: auto; font-size: 9px; color: var(--faint); }
+  .rowlive { display: none; align-items: center; gap: 3px; margin-left: 6px;
+             font-size: 7.5px; font-weight: 700; letter-spacing: .12em; color: var(--green); }
+  .rowlive.on { display: inline-flex; }
+  .rowlive .pulse { width: 5px; height: 5px; }
+
+  .tpane { flex: 1; display: flex; flex-direction: column; min-width: 0; background: #0A100D; }
+  .tbarrow {
+    display: flex; align-items: center; height: 30px; padding: 0 10px;
+    border-bottom: 1px solid var(--line-soft); font-size: 10px; color: var(--dim);
+  }
+  .tbarrow .name { letter-spacing: .05em; }
+  .icobtn {
+    width: 17px; height: 17px; border-radius: 50%;
+    display: grid; place-items: center; color: var(--dim); cursor: default;
+    transition: background .25s, color .25s;
+  }
+  .sbar .icobtn { margin-left: 0; }
+  .icobtn.gone { display: none; }
+  .icobtn.hot { background: var(--green-soft); color: var(--green); }
+  .icobtn svg { display: block; }
+
+  .tlines { flex: 1; padding: 12px 14px; font-size: 11.5px; line-height: 1.62; overflow: hidden; }
+  .tlines div { white-space: pre; min-height: 18.6px; }
+  .gtx { color: var(--green); } .dtx { color: var(--dim); } .rtx { color: var(--red); }
+  .wtx { color: var(--text); font-weight: 600; } .atx { color: var(--amber); }
+
+  .sbar {
+    display: flex; align-items: center; gap: 14px; height: 23px; padding: 0 12px;
+    background: var(--panel-deep); border-top: 1px solid var(--line-soft);
+    font-size: 9.5px; color: var(--dim); white-space: nowrap;
+  }
+  .sbar .k { color: var(--faint); }
+  .sbar .v { color: var(--dim); }
+  .sbar .tabv { color: var(--text); }
+  .live-seg { display: none; align-items: center; gap: 5px; color: var(--green); letter-spacing: .04em; }
+  .live-seg.on { display: inline-flex; }
+  .pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: sw-pul 1.6s infinite; }
+  .sbar .brand { margin-left: auto; color: var(--faint); letter-spacing: .14em; }
+  .sbar .brand b { color: var(--green); font-weight: 700; }
+
+  /* ---------- share popover ---------- */
+  .pop {
+    position: absolute; right: 10px; bottom: 30px; width: 276px; z-index: 5;
+    background: #0E1511; border: 1px solid var(--line); border-radius: 9px;
+    box-shadow: 0 18px 44px rgba(0,0,0,.6);
+    padding: 14px 14px 12px; opacity: 0; transform: translateY(6px) scale(.97);
+    pointer-events: none; transition: opacity .28s, transform .28s;
+    transform-origin: bottom right;
+  }
+  .pop.open { opacity: 1; transform: none; }
+  .pop .pt { font-size: 9.5px; letter-spacing: .22em; color: var(--green); margin-bottom: 8px; }
+  .pop .pd { font-size: 10px; line-height: 1.6; color: var(--dim); margin-bottom: 12px; }
+  .pbtn {
+    display: block; width: 100%; text-align: center; padding: 7px 0; border-radius: 6px;
+    font-size: 11px; letter-spacing: .06em; font-family: var(--mono);
+    background: var(--green); color: #06110B; font-weight: 700; border: none;
+  }
+  .pop .idle, .pop .livebox { display: block; }
+  .pop.live .idle, .pop.consent .idle { display: none; }
+  .pop .livebox, .pop .consentbox { display: none; }
+  .pop.live .livebox { display: block; }
+  .pop.consent .consentbox { display: block; }
+  .warnhead { display: flex; align-items: center; gap: 6px; font-size: 8.5px; font-weight: 600;
+              letter-spacing: .18em; color: var(--amber); margin-bottom: 8px; }
+  .warntext { font-size: 10px; line-height: 1.6; color: var(--text); margin-bottom: 8px; }
+  .warnsub { font-size: 9.5px; line-height: 1.6; color: var(--dim); margin-bottom: 12px; }
+  .btnrow { display: flex; flex-direction: column; gap: 8px; }
+  .btnrow .golive { text-align: center; padding: 9px 0; border-radius: 6px; letter-spacing: .04em;
+                    background: var(--green); color: #06110B; font-weight: 700; font-size: 10.5px; }
+  .btnrow .cancel { text-align: center; padding: 5px 0; color: var(--dim); font-size: 9.5px; }
+
+  .linkrow { display: flex; gap: 6px; margin-bottom: 10px; }
+  .linkpill {
+    flex: 1; min-width: 0; background: #0A0F0C; border: 1px solid var(--line);
+    border-radius: 6px; padding: 7px 9px; font-size: 9.5px; color: var(--text);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .linkpill i { font-style: normal; color: var(--green); }
+  .copyb {
+    flex: none; border: 1px solid rgba(47,224,140,.4); background: var(--green-soft);
+    color: var(--green); border-radius: 6px; font-size: 9px; letter-spacing: .1em;
+    padding: 0 10px; font-family: var(--mono);
+  }
+  .copyb.did { background: var(--green); color: #06110B; border-color: var(--green); font-weight: 700; }
+  .lrow { display: flex; align-items: center; gap: 7px; font-size: 10px; color: var(--green); margin-bottom: 10px; }
+  .lrow .wc { color: var(--text); }
+
+  .plabel { font-size: 8.5px; letter-spacing: .22em; color: var(--faint); margin: 2px 0 6px; }
+  .plist { margin-bottom: 11px; min-height: 4px; }
+  .prow {
+    display: flex; align-items: center; gap: 8px; padding: 4px 2px;
+    font-size: 10.5px; color: var(--text); opacity: 0; transform: translateX(-5px);
+    transition: opacity .35s, transform .35s;
+  }
+  .prow.in { opacity: 1; transform: none; }
+  .prow .pjoin { margin-left: auto; font-size: 8.5px; color: var(--faint); }
+  .plist .none { font-size: 9.5px; color: var(--faint); padding: 2px; }
+
+  .stopb {
+    display: block; width: 100%; text-align: center; padding: 6px 0; border-radius: 6px;
+    background: none; border: 1px solid rgba(232,106,106,.45); color: var(--red);
+    font-size: 10.5px; letter-spacing: .06em; font-family: var(--mono);
+  }
+  .pop .fine { font-size: 8.5px; color: var(--faint); margin-top: 9px; line-height: 1.55; }
+  .optrow { display: flex; align-items: center; justify-content: space-between;
+            font-size: 9.5px; color: var(--text); margin-bottom: 8px; }
+  .sw { width: 24px; height: 13px; border-radius: 7px; background: var(--green); position: relative; flex: none; }
+  .sw::after { content: ""; position: absolute; right: 2px; top: 2px; width: 9px; height: 9px;
+               border-radius: 50%; background: #06110B; }
+  .codeblock { margin-bottom: 10px; }
+  .codeblock .cl { font-size: 8px; letter-spacing: .22em; color: var(--faint); margin-bottom: 3px; }
+  .codeblock .cv { font-size: 15px; font-weight: 700; letter-spacing: .2em; color: var(--text); }
+  .codeblock .ch { font-size: 8px; color: var(--faint); margin-top: 3px; }
+  .stopin { margin-left: auto; font-size: 8.5px; color: var(--dim); }
+  .stopin i { font-style: normal; color: var(--green); }
+
+  /* ---------- browser window ---------- */
+  .bro {
+    left: 520px; top: 76px; width: 564px; height: 458px; z-index: 3;
+    opacity: 0; transform: translateX(46px); transition: opacity .5s, transform .5s cubic-bezier(.2,.7,.2,1);
+  }
+  .bro.in { opacity: 1; transform: none; }
+  .bro.reload .viewer { opacity: .12; transition: opacity .12s; }
+  .bro .viewer { transition: opacity .3s; }
+  .urlpill {
+    flex: 1; margin: 0 8px; background: #0A0F0C; border: 1px solid var(--line-soft);
+    border-radius: 6px; padding: 4px 10px; font-size: 9.5px; color: var(--dim);
+    overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  }
+  .urlpill .lock { color: var(--green); margin-right: 6px; }
+  .urlpill i { font-style: normal; color: var(--faint); }
+
+  .viewer { display: flex; flex-direction: column; height: calc(100% - 34px); background: #0A100D; position: relative; }
+  .vtop {
+    display: flex; align-items: center; gap: 9px; height: 32px; padding: 0 12px;
+    border-bottom: 1px solid var(--line-soft); font-size: 10px; color: var(--dim);
+  }
+  .vtop .vm { color: var(--green); font-weight: 700; }
+  .vtop .vw { letter-spacing: .18em; color: var(--text); font-size: 9.5px; }
+  .vtop .vname { color: var(--dim); }
+  .vtop .vlive { display: flex; align-items: center; gap: 5px; color: var(--green); letter-spacing: .05em; }
+  .vstack { display: flex; align-items: center; margin-left: auto; }
+  .vstack .av { margin-left: -5px; border: 1.5px solid #0A100D; }
+  .vstack .av:first-child { margin-left: 0; }
+  .vstack .vc { font-size: 9px; color: var(--dim); margin-left: 7px; }
+  .vtop .e2e {
+    font-size: 8.5px; letter-spacing: .12em; color: var(--green);
+    border: 1px solid rgba(47,224,140,.3); border-radius: 3px; padding: 2px 6px;
+    background: var(--green-soft); margin-left: 10px;
+  }
+  .vlines { flex: 1; padding: 12px 14px; font-size: 11.5px; line-height: 1.62; overflow: hidden; }
+  .vlines div { white-space: pre; min-height: 18.6px; }
+  .vfoot {
+    display: flex; align-items: center; height: 24px; padding: 0 12px;
+    border-top: 1px solid var(--line-soft); font-size: 8.5px; letter-spacing: .14em;
+    color: var(--faint); background: var(--panel-deep);
+  }
+  .vfoot .rc { margin-left: auto; color: var(--faint); }
+  .vfoot .rc i { font-style: normal; color: var(--amber); }
+
+  /* ---------- name gate ---------- */
+  .gate {
+    position: absolute; inset: 0; z-index: 5; background: rgba(8,12,10,.97);
+    display: grid; place-items: center; transition: opacity .45s;
+  }
+  .gate.off { opacity: 0; pointer-events: none; }
+  .gcard { width: 300px; text-align: center; }
+  .gcard .gm { font-size: 22px; font-weight: 700; color: var(--green); text-shadow: 0 0 14px rgba(47,224,140,.5); }
+  .gcard .gt { font-size: 12px; letter-spacing: .06em; color: var(--text); margin: 10px 0 3px; }
+  .gcard .gs { font-size: 9.5px; color: var(--dim); line-height: 1.6; margin-bottom: 16px; }
+  .grow { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .gav { width: 30px; height: 30px; flex: none; border-radius: 50%; background: #101713; border: 1px dashed var(--line); display: grid; place-items: center; transition: border-color .3s; }
+  .gav .av { display: block; }
+  .ginput {
+    flex: 1; text-align: left; background: #0A0F0C; border: 1px solid var(--line);
+    border-radius: 6px; padding: 8px 10px; font-size: 11px; color: var(--text); min-height: 33px;
+  }
+  .ginput .ph { color: var(--faint); }
+  .caret { display: inline-block; width: 6px; height: 12px; background: var(--green); vertical-align: -2px; animation: sw-blink 1s steps(1) infinite; }
+  .gbtn {
+    display: block; width: 100%; padding: 8px 0; border-radius: 6px; border: none;
+    background: var(--green); color: #06110B; font-weight: 700; font-size: 11px;
+    letter-spacing: .06em; font-family: var(--mono); opacity: .35; transition: opacity .3s;
+  }
+  .gbtn.ready { opacity: 1; }
+  .gcard .gfine { font-size: 8.5px; color: var(--faint); margin-top: 11px; line-height: 1.6; }
+
+  .ended {
+    position: absolute; inset: 34px 0 0; background: rgba(7,11,9,.93); z-index: 6;
+    display: grid; place-items: center; opacity: 0; pointer-events: none; transition: opacity .45s;
+  }
+  .ended.on { opacity: 1; }
+  .ended .eb { text-align: center; }
+  .ended .e1 { font-size: 13px; letter-spacing: .3em; color: var(--dim); margin-bottom: 10px; }
+  .ended .e2 { font-size: 10px; color: var(--faint); line-height: 1.7; }
+
+  /* ---------- cursor ---------- */
+  .cur {
+    position: absolute; z-index: 9; width: 17px; left: 300px; top: 300px;
+    transition: left .6s cubic-bezier(.3,.75,.25,1), top .6s cubic-bezier(.3,.75,.25,1), transform .12s;
+    filter: drop-shadow(0 2px 5px rgba(0,0,0,.6)); pointer-events: none;
+  }
+  .cur.press { transform: scale(.82); }
+  .ripple {
+    position: absolute; z-index: 8; width: 30px; height: 30px; border-radius: 50%;
+    border: 1.5px solid var(--green); opacity: 0; pointer-events: none;
+  }
+  .ripple.go { animation: sw-rip .5s ease-out; }
+  /* ---------- captions ---------- */
+  .caps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 34px; }
+  .cap { border: 1px solid var(--line-soft); border-radius: 9px; padding: 15px 16px; background: rgba(12,18,15,.6); }
+  .cap .ck { font-size: 9px; letter-spacing: .24em; color: var(--green); margin-bottom: 8px; }
+  .cap .cv { font-size: 10.5px; line-height: 1.7; color: var(--dim); }
+  .cap .cv b { color: var(--text); font-weight: 600; }
+
+  .p2 {
+    margin-top: 26px; border-top: 1px solid var(--line-soft); padding-top: 16px;
+    font-size: 10px; color: var(--faint); line-height: 1.8;
+  }
+  .p2 b { color: var(--dim); font-weight: 600; letter-spacing: .16em; }
+
+  @media (max-width: 860px) { .caps { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .caps { grid-template-columns: 1fr; } }
+  @media (prefers-reduced-motion: reduce) { .cur, .ripple { display: none !important; } }
+
+  }
+  #beam { background: transparent; color: var(--fg, #DBEAE1); font-family: var(--sans); padding: 4.5rem 1.75rem 5rem; }
+  #beam .stage-scroll, #beam .stage { font-family: var(--mono); }
+  #beam .narr { font-family: var(--sans); font-size: 0.875rem; letter-spacing: 0; color: var(--dim, #a8adb3); }
+  #beam .sw-head { max-width: var(--wrap, 62rem); margin: 0 auto 8px; }
+  #beam .sw-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono);
+    font-size: 0.6875rem; letter-spacing: .18em; color: #2FE08C; border: 1px solid rgba(47,224,140,.35);
+    background: rgba(47,224,140,.12); border-radius: 3px; padding: 4px 10px; margin-bottom: 1.25rem; }
+  #beam h2 { font-family: var(--sans); font-size: clamp(1.9rem, 4.5vw, 2.7rem); font-weight: 650;
+    line-height: 1.15; letter-spacing: -0.012em; margin: 0 0 0.9rem; color: var(--bright, #fff); max-width: 22ch; }
+  #beam h2 i { font-style: normal; color: var(--accent, #2FE08C); text-shadow: 0 0 18px rgba(47,224,140,.35); }
+  #beam .sw-sub { font-family: var(--sans); font-size: 0.9375rem; line-height: 1.75; color: var(--dim, #a8adb3);
+    max-width: 64ch; margin: 0 0 0.5rem; }
+  #beam .sw-sub b { color: var(--fg, #e8eaed); font-weight: 600; }
+  #beam .sw-wrap { max-width: var(--wrap, 62rem); margin: 0 auto; }
+  #beam .caps { max-width: var(--wrap, 62rem); margin: 2.25rem auto 0; }
+  #beam .cap .cv { font-family: var(--sans); font-size: 0.875rem; line-height: 1.65; color: var(--dim, #a8adb3); }
+  #beam .cap .cv b { color: var(--fg, #e8eaed); }
+  #beam .sw-cta { max-width: var(--wrap, 62rem); margin: 2rem auto 0; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  #beam .sw-curl { background: #0C120F; border: 1px solid #1B2620; border-radius: 8px; padding: 12px 16px;
+    font-family: var(--mono); font-size: 0.8125rem; color: var(--fg, #e8eaed); overflow-x: auto; white-space: nowrap; }
+  #beam .sw-curl i { font-style: normal; color: var(--accent, #2FE08C); }
+  #beam .sw-note { font-family: var(--mono); font-size: 0.6875rem; color: var(--faint, #7c8288); letter-spacing: .06em; }
+  #beam .sw-kicker { max-width: var(--wrap, 62rem); margin: 3rem auto 0; font-family: var(--mono);
+    font-size: 0.75rem; letter-spacing: .3em; color: var(--faint, #7c8288); }
+  #beam .sw-kicker b { color: var(--accent, #2FE08C); font-weight: 700; }
+  .hero .wrap.hero-beam { display: grid; grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
+    gap: 3rem; align-items: center; max-width: 84rem; }
+  /* Grid items default to min-width auto and refuse to shrink below the nowrap install command,
+     which silently forced an 837px floor under every narrow viewport. */
+  .hero-beam .hero-copy, .hero-beam .hero-demo { min-width: 0; }
+  .hero-beam .slogan { font-family: var(--mono); font-size: 0.8125rem; letter-spacing: 0.34em;
+    color: var(--fg, #e8eaed); margin: 1.2rem 0 1rem; }
+  .hero-beam .slogan b { color: var(--accent, #2FE08C); font-weight: 700;
+    text-shadow: 0 0 14px rgba(62, 207, 142, 0.55); }
+  /* Scaled for the two-column hero: the full-width sizes overpowered the demo beside them. */
+  .hero-beam h1 { font-size: clamp(1.7rem, 3.2vw, 2.5rem); }
+  .hero-beam .appicon { width: 64px; height: 64px; }
+  .hero-beam .lede { font-size: 0.9375rem; line-height: 1.75; }
+  /* One integrated pill: the command fades out before the divider instead of colliding with
+     the button, stays horizontally scrollable (scrollbar hidden), and Copy sits inside as a
+     quiet accent control. Copy always yields the FULL command regardless of what is visible. */
+  .hero-beam .install { display: flex; align-items: stretch; gap: 0;
+    background: rgba(12, 18, 15, 0.6); border: 1px solid var(--line);
+    border-radius: 10px; overflow: hidden; }
+  .hero-beam .install pre { flex: 1; min-width: 0; margin: 0; border: 0; background: transparent;
+    padding: 0.85rem 1rem; font-size: 0.75rem; line-height: 1.4; overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(90deg, #000 82%, transparent 98%);
+    mask-image: linear-gradient(90deg, #000 82%, transparent 98%); }
+  .hero-beam .install pre::-webkit-scrollbar { display: none; }
+  .hero-beam .install .copy.primary { margin: 0; border: 0; border-left: 1px solid var(--line);
+    border-radius: 0; background: transparent; color: var(--accent);
+    font-weight: 650; font-size: 0.8125rem; padding: 0 1.15rem; }
+  .hero-beam .install .copy.primary:hover { background: rgba(62, 207, 142, 0.12); }
+  .hero-beam .after-install { font-size: 0.8125rem; }
+  .hero-demo .shot-scroll { overflow: hidden; margin-top: 1.25rem; }
+  .hero-demo .demo-cap { margin-top: 0.9rem; font-size: 0.8125rem; }
+  .hero-demo .demo-foot { margin-top: 0.5rem; font-size: 0.75rem; }
+  .hero-demo { min-width: 0; font-family: var(--mono); color: #DBEAE1; }
+  .hero-demo .narr { font-family: var(--sans); font-size: 0.8125rem; color: var(--dim, #a8adb3);
+    letter-spacing: 0; height: 18px; margin: 0 0 10px; }
+  .hero-demo .stage { position: relative; width: 1084px; height: 566px; transform-origin: top left; }
+  .hero-demo .stage-scroll { overflow: hidden; }
+  @media (max-width: 900px) {
+    .hero .wrap.hero-beam { grid-template-columns: 1fr; gap: 2rem; }
+  }
+  /* keyframes must be top level: nested inside #beam they are silently dropped */
+@keyframes sw-pul { 0%,100% { box-shadow: 0 0 0 0 rgba(47,224,140,.5);} 55% { box-shadow: 0 0 0 5px rgba(47,224,140,0);} }
+@keyframes sw-blink { 50% { opacity: 0; } }
+@keyframes sw-rip { 0% { transform: scale(.3); opacity: .8; } 100% { transform: scale(1.25); opacity: 0; } }
+</style>
+
+<div class="sw-head">
+  <span class="sw-eyebrow">BEAM · COMING IN 1.9.0</span>
+  <h2>Your terminal, <i>live</i> in their browser.</h2>
+  <p class="sw-sub">One click streams any tab to a link. Teammates watch in any browser on any
+  device, <b>nothing to install</b>: a long build, a deploy, a migration, or an AI agent
+  at work, all live. Watching is not touching: the protocol has no message for input.</p>
+  <p class="sw-sub"><b>Gated</b>: a name and an access code you share separately, with every watcher shown live.
+  <b>Sealed</b>: end to end encrypted, so even our relay only ever sees ciphertext.
+  <b>Ephemeral</b>: auto stops after an hour, and stopping kills the link for everyone. Nothing is stored.</p>
+</div>
+
+
+
+<div class="sw-wrap">
+<div class="narr" id="sw-narr">&nbsp;</div>
+<div class="stage-scroll">
+    <div class="stage" id="sw-stage">
+
+      <!-- HOST APP -->
+      <div class="win app">
+        <div class="tbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="ttl">AuraMux</span><span class="sp"></span></div>
+        <div class="app-body">
+          <aside class="side">
+            <div class="lbl">SESSIONS</div>
+            <div class="srow on"><span class="sdot"></span>checkout-revamp
+              <span class="rowlive" id="sw-rowLive"><span class="pulse"></span>LIVE</span>
+              <span class="nt">▤</span></div>
+            <div class="srow"><span class="sdot"></span>api-server</div>
+            <div class="srow"><span class="sdot"></span>scratch</div>
+          </aside>
+          <div class="tpane">
+            <div class="tbarrow">
+              <span class="name">checkout-revamp</span>
+            </div>
+            <div class="tlines" id="sw-hostLines"></div>
+            <div class="sbar">
+              <span><span class="k">tab</span> <span class="tabv">checkout-revamp</span></span>
+              <span><span class="k">cwd</span> <span class="v">~/dev/checkout</span></span>
+              <span class="v">zsh</span>
+              <span><span class="k">enc</span> <span class="v">UTF-8</span></span>
+              <span class="icobtn" id="sw-shareBtn" title="Share to Web">
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                  <circle cx="6" cy="6" r="4.6" stroke="currentColor" stroke-width="1.1"/>
+                  <path d="M1.6 6h8.8M6 1.4c1.5 1.4 1.5 7.8 0 9.2M6 1.4c-1.5 1.4-1.5 7.8 0 9.2"
+                        stroke="currentColor" stroke-width="1.1"/>
+                </svg>
+              </span>
+              <span class="live-seg" id="sw-liveSeg"><span class="pulse"></span>LIVE · <span id="sw-wHost">0</span> watching</span>
+              <span><span class="k">scrollback</span> <span class="v">10k</span></span>
+              <span class="brand"><b>&gt;_</b> AURAMUX</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- share popover -->
+        <div class="pop" id="sw-pop">
+          <div class="pt">BEAM</div>
+          <div class="idle">
+            <div class="pd">Stream this tab, view only, to anyone with the link. Encrypted end to end: the relay only ever sees ciphertext.</div>
+            <div class="optrow"><span>Auto stop after 1 hour</span><span class="sw"></span></div>
+            <div class="optrow"><span>Require an access code</span><span class="sw"></span></div>
+            <button class="pbtn" id="sw-startBtn">Beam This Tab</button>
+          </div>
+          <div class="consentbox">
+            <div class="warnhead">⚠ BEFORE YOU GO LIVE</div>
+            <div class="warntext">Everything this tab prints streams to whoever you let in, including any secret that appears on screen: keys, tokens, passwords, personal data.</div>
+            <div class="warnsub">Share this tab only if you would show it on a projector. Stopping kills the link for everyone.</div>
+            <div class="btnrow">
+              <span class="golive" id="sw-goLive">I Understand · Go Live</span>
+              <span class="cancel">Cancel</span>
+            </div>
+          </div>
+          <div class="livebox">
+            <div class="linkrow">
+              <span class="linkpill">auramux.com/watch<i>#2b2n4gec5wrj26z5PFbe30vD…c</i></span>
+              <button class="copyb" id="sw-copyBtn">COPY</button>
+            </div>
+            <div class="codeblock">
+              <div class="cl">ACCESS CODE</div>
+              <div class="cv">K7TQ-M2XR</div>
+              <div class="ch">Share it in a different channel than the link.</div>
+            </div>
+            <div class="lrow"><span class="pulse"></span>LIVE · <span class="wc"><span id="sw-wPop">0</span> watching</span><span class="stopin">stops in <span id="sw-cd">59:44</span> · <i>remove</i></span></div>
+            <div class="plabel">WATCHING NOW</div>
+            <div class="plist" id="sw-popViewers"><div class="none">No one yet. Send the link.</div></div>
+            <button class="stopb" id="sw-stopBtn">Stop Beaming</button>
+            <div class="fine">Viewers must enter a name to watch. The key after # never reaches the server. Link dies the moment you stop.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BROWSER -->
+      <div class="win bro" id="sw-bro">
+        <div class="tbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="urlpill"><span class="lock">🔒</span>auramux.com/watch<i>#2b2n4gec5wrj26z5PFbe30vD…c</i></span></div>
+        <div class="viewer">
+          <div class="vtop">
+            <span class="vm">&gt;_</span><span class="vw">AURAMUX</span>
+            <span class="vname">· checkout-revamp</span>
+            <span class="vlive"><span class="pulse"></span>LIVE</span>
+            <span class="vstack" id="sw-vStack"></span>
+            <span class="e2e">E2E ⏻</span>
+          </div>
+          <div class="vlines" id="sw-viewLines"></div>
+          <div class="vfoot">VIEW ONLY · ENCRYPTED END TO END<span class="rc">REQUEST CONTROL · <i>PHASE 2</i></span></div>
+
+          <!-- name gate -->
+          <div class="gate" id="gate">
+            <div class="gcard">
+              <div class="gm">&gt;_</div>
+              <div class="gt">checkout-revamp</div>
+              <div class="gs">You have been invited to watch this session,<br>live and view only.</div>
+              <div class="grow">
+                <span class="gav" id="sw-gAv"></span>
+                <span class="ginput" id="sw-gInput"><span class="ph">your name</span></span>
+              </div>
+              <div class="grow">
+                <span class="ginput" id="sw-gCode"><span class="ph">access code</span></span>
+              </div>
+              <button class="gbtn" id="sw-gBtn">Watch Stream</button>
+              <div class="gfine">The code travels separately from the link.<br>Without it, nothing decrypts.</div>
+            </div>
+          </div>
+        </div>
+        <div class="ended" id="sw-ended">
+          <div class="eb">
+            <div class="e1">◼ SHARE ENDED</div>
+            <div class="e2">The person sharing stopped the stream.<br>This link is dead for everyone. Nothing was stored.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- cursor + ripple -->
+      <div class="ripple" id="sw-ripple"></div>
+      <svg class="cur" id="sw-cur" viewBox="0 0 17 24">
+        <path d="M1 1 L1 19 L5.5 15 L8.5 22 L11.5 20.6 L8.6 14 L14.5 14 Z"
+              fill="#EDEFEA" stroke="#111" stroke-width="1.2" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<div class="caps">
+  <div class="cap"><div class="ck">ZERO SETUP</div>
+    <div class="cv"><b>Viewers just open a link.</b> Any browser, any OS. No install, no account: only a name to enter.</div></div>
+  <div class="cap"><div class="ck">NAMED</div>
+    <div class="cv"><b>No anonymous lurkers.</b> Every viewer states a name, gets a generated avatar, and appears in your watch list live.</div></div>
+  <div class="cap"><div class="ck">SEALED</div>
+    <div class="cv"><b>The key lives after the #.</b> The relay forwards ciphertext it cannot read, and the access code is mixed into the keys: wrong code, zero decryption.</div></div>
+  <div class="cap"><div class="ck">EPHEMERAL</div>
+    <div class="cv"><b>Stop means gone.</b> Every beam stops itself after an hour unless you lift the limit, and stopping kills the link for everyone.</div></div>
+</div>
+
+<div class="sw-cta">
+  <div class="sw-curl"><i>❯</i> curl -fsSL https://github.com/rmehdee/auramux-releases/releases/latest/download/install.sh | bash</div>
+  <span class="sw-note">FREE · COMING IN 1.9.0 · EXISTING INSTALLS GET IT AS AN UPDATE</span>
+</div>
+
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const stage = $('sw-stage'), cur = $('sw-cur'), ripple = $('sw-ripple'), narr = $('sw-narr');
+  const pop = $('sw-pop'), bro = $('sw-bro'), ended = $('sw-ended'), gate = $('gate');
+  const hostLines = $('sw-hostLines'), viewLines = $('sw-viewLines');
+  const liveSeg = $('sw-liveSeg'), startBtn = $('sw-startBtn'), copyBtn = $('sw-copyBtn');
+  const shareBtn = $('sw-shareBtn'), popViewers = $('sw-popViewers'), vStack = $('sw-vStack');
+  const gInput = $('sw-gInput'), gAv = $('sw-gAv'), gBtn = $('sw-gBtn');
+
+  const PRE = [
+    '<span class="gtx">❯</span> claude',
+    '<span class="dtx">✳ Claude Code · session resumed</span>',
+    '',
+    '<span class="dtx">&gt;</span> fix the flaky checkout test'
+  ];
+  const STREAM = [
+    '<span class="dtx">●</span> Reading <span class="wtx">tests/checkout.spec.ts</span>',
+    '<span class="dtx">●</span> Found a race: total is read before render',
+    '<span class="dtx">●</span> Editing <span class="wtx">tests/checkout.spec.ts</span>',
+    '<span class="rtx">-   await page.click("#pay")</span>',
+    '<span class="gtx">+   await expect(total).toBeVisible()</span>',
+    '<span class="atx">⧗</span> <span class="dtx">running suite…</span>',
+    '<span class="gtx">✓</span> 12 passed <span class="dtx">(3.1s)</span>',
+    'Done. The test no longer races the render.'
+  ];
+
+  /* Deterministic "random" avatar: name hashes to a gradient pair + initials.
+     Exactly how the real build would do it: generated locally, no image service. */
+  const GRADS = [
+    ['#7C5CFF', '#3EC8FF'], ['#FF7A59', '#FFC24B'], ['#2FE08C', '#2E9BFF'],
+    ['#FF5C8A', '#FFB03A'], ['#3ED6C0', '#7C5CFF'], ['#E5B45B', '#E86A6A']
+  ];
+  let gid = 0;
+  function avatar(name, size) {
+    let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+    const [c1, c2] = GRADS[h % GRADS.length];
+    const initials = name.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+    const id = 'ag' + (gid++);
+    return '<svg class="av" width="' + size + '" height="' + size + '" viewBox="0 0 32 32">' +
+      '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1">' +
+      '<stop offset="0" stop-color="' + c1 + '"/><stop offset="1" stop-color="' + c2 + '"/></linearGradient></defs>' +
+      '<circle cx="16" cy="16" r="16" fill="url(#' + id + ')"/>' +
+      '<text x="16" y="21" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" ' +
+      'font-weight="700" fill="rgba(6,17,11,.85)">' + initials + '</text></svg>';
+  }
+
+  function fill(el, lines) { el.innerHTML = lines.map(l => '<div>' + (l || '&nbsp;') + '</div>').join(''); }
+  function addLine(html, toViewer) {
+    const d = document.createElement('div'); d.innerHTML = html || '&nbsp;';
+    hostLines.appendChild(d);
+    if (toViewer) { const v = document.createElement('div'); v.innerHTML = html || '&nbsp;'; viewLines.appendChild(v); }
+  }
+  function counts(n) { ['sw-wHost', 'sw-wPop'].forEach(id => $(id).textContent = n); }
+  function say(html) { narr.style.opacity = 0; setTimeout(() => { narr.innerHTML = html; narr.style.opacity = 1; }, 260); }
+
+  let watchers = [];
+  function addViewer(name, joined) {
+    watchers.push(name);
+    if (watchers.length === 1) popViewers.innerHTML = '';
+    const row = document.createElement('div'); row.className = 'prow';
+    row.innerHTML = avatar(name, 16) + '<span>' + name + '</span><span class="pjoin">' + joined + '</span>';
+    popViewers.appendChild(row);
+    requestAnimationFrame(() => row.classList.add('in'));
+    vStack.innerHTML = watchers.map(n => avatar(n, 16)).join('') +
+      '<span class="vc">' + watchers.length + ' watching</span>';
+    counts(watchers.length);
+  }
+
+  // The stage is a fixed 1084x566 diorama scaled to fit its container, so the page never grows
+  // a scrollbar. All cursor math divides by the scale, because element rects arrive in screen
+  // pixels while the cursor is positioned in the stage's own unscaled coordinates.
+  function rescale() {
+    const holder = stage.parentElement;
+    const k = Math.min(1, holder.clientWidth / 1084);
+    stage.style.transform = 'scale(' + k + ')';
+    holder.style.height = (566 * k) + 'px';
+  }
+  window.addEventListener('resize', rescale);
+  rescale();
+
+  function center(el) {
+    const s = stage.getBoundingClientRect(), r = el.getBoundingClientRect();
+    const k = s.width / 1084;
+    return { x: (r.left - s.left + r.width / 2) / k, y: (r.top - s.top + r.height / 2) / k };
+  }
+  function moveTo(el) { const c = center(el); cur.style.left = (c.x - 2) + 'px'; cur.style.top = (c.y - 2) + 'px'; }
+  function click(el) {
+    const c = center(el);
+    cur.classList.add('press');
+    ripple.style.left = (c.x - 15) + 'px'; ripple.style.top = (c.y - 15) + 'px';
+    ripple.classList.remove('go'); void ripple.offsetWidth; ripple.classList.add('go');
+    setTimeout(() => cur.classList.remove('press'), 150);
+  }
+
+  function typeInto(el, text, speed, done) {
+    let i = 0;
+    el.innerHTML = '<span class="caret"></span>';
+    const tick = setInterval(() => {
+      i++;
+      el.innerHTML = text.slice(0, i) + '<span class="caret"></span>';
+      if (i >= text.length) { clearInterval(tick); el.innerHTML = text; if (done) done(); }
+    }, speed);
+  }
+  function typeName(name, done) {
+    typeInto(gInput, name, 130, () => {
+      gAv.innerHTML = avatar(name, 30); gAv.style.borderColor = 'transparent';
+      if (done) done();
+    });
+  }
+
+  function reset() {
+    fill(hostLines, PRE); viewLines.innerHTML = '';
+    pop.classList.remove('open', 'live', 'consent');
+    bro.classList.remove('in'); ended.classList.remove('on'); gate.classList.remove('off');
+    liveSeg.classList.remove('on'); shareBtn.classList.remove('hot', 'gone'); document.getElementById('sw-rowLive').classList.remove('on');
+    startBtn.textContent = 'Start Sharing';
+    copyBtn.textContent = 'COPY'; copyBtn.classList.remove('did');
+    watchers = []; popViewers.innerHTML = '<div class="none">No one yet. Send the link.</div>';
+    vStack.innerHTML = ''; counts(0);
+    gInput.innerHTML = '<span class="ph">your name</span>';
+    document.getElementById('sw-gCode').innerHTML = '<span class="ph">access code</span>';
+    gAv.innerHTML = ''; gAv.style.borderColor = ''; gBtn.classList.remove('ready');
+    cur.style.left = '300px'; cur.style.top = '330px';
+  }
+
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced) {
+    fill(hostLines, PRE.concat(STREAM)); fill(viewLines, PRE.concat(STREAM));
+    pop.classList.add('open', 'live'); bro.classList.add('in'); gate.classList.add('off');
+    liveSeg.classList.add('on'); shareBtn.classList.add('gone'); document.getElementById('sw-rowLive').classList.add('on');
+    addViewer('Larry', 'now'); addViewer('Deniz K.', 'now');
+    narr.innerHTML = 'Viewers enter a name to watch. The host sees exactly who is watching.';
+    return;
+  }
+
+  function run() {
+    reset();
+    let t = 0; const at = (ms, fn) => { t += ms; setTimeout(fn, t); };
+
+    at(700, () => { say('The host clicks the globe in the bottom bar. <b>One click.</b>'); moveTo(shareBtn); });
+    at(950, () => { click(shareBtn); shareBtn.classList.add('hot'); });
+    at(280, () => pop.classList.add('open'));
+    at(900, () => moveTo(startBtn));
+    at(750, () => { click(startBtn); pop.classList.add('consent'); say('Nothing goes live yet: <b>terminals print secrets, so consent comes first</b>.'); });
+    at(1600, () => moveTo(document.getElementById('sw-goLive')));
+    at(900, () => { click(document.getElementById('sw-goLive')); pop.classList.remove('consent'); });
+    at(400, () => { pop.classList.add('live'); liveSeg.classList.add('on'); shareBtn.classList.add('gone'); document.getElementById('sw-rowLive').classList.add('on'); say('A link is minted. <b>The key after # never leaves this Mac.</b>'); });
+    at(850, () => moveTo(copyBtn));
+    at(650, () => { click(copyBtn); copyBtn.textContent = 'COPIED'; copyBtn.classList.add('did'); });
+    at(1000, () => { say('A colleague opens it and hits the gate: <b>name and access code required</b>.'); bro.classList.add('in'); });
+    at(900, () => { moveTo(gInput); });
+    at(700, () => { click(gInput); typeName('Larry'); });
+    at(1200, () => { say('Name in, avatar generated. <b>Now the code, shared in a separate channel.</b>'); moveTo(document.getElementById('sw-gCode')); });
+    at(700, () => { click(document.getElementById('sw-gCode')); typeInto(document.getElementById('sw-gCode'), 'K7TQ-M2XR', 110, () => gBtn.classList.add('ready')); });
+    at(1500, () => { say('<b>The code is mixed into the encryption keys.</b> Wrong code, nothing decrypts.'); moveTo(gBtn); });
+    at(900, () => click(gBtn));
+    at(250, () => {
+      gate.classList.add('off');
+      PRE.forEach(l => { const v = document.createElement('div'); v.innerHTML = l || '&nbsp;'; viewLines.appendChild(v); });
+      addViewer('Larry', 'just now');
+    });
+    at(800, () => say('Larry appears in the host\'s watch list. <b>No anonymous lurkers.</b>'));
+    STREAM.forEach((l, i) => at(i === 0 ? 400 : 700, () => {
+      addLine(l, true);
+      if (i === 3) { addViewer('Deniz K.', 'just now'); say('Deniz joins too. <b>The host always knows who is watching.</b>'); }
+    }));
+    at(1200, () => { say('The viewer hits refresh: <b>rejoined instantly, remembered only in that tab</b>.'); bro.classList.add('reload'); });
+    at(400, () => bro.classList.remove('reload'));
+    at(1600, () => { say('Done? <b>Stop kills the link for everyone.</b>'); moveTo($('sw-stopBtn')); });
+    at(900, () => click($('sw-stopBtn')));
+    at(350, () => { ended.classList.add('on'); liveSeg.classList.remove('on'); shareBtn.classList.remove('gone'); document.getElementById('sw-rowLive').classList.remove('on'); counts(0); });
+    at(2400, () => { bro.classList.remove('in'); pop.classList.remove('open'); });
+    at(1100, run);
+  }
+  setInterval(() => {
+    const el = document.getElementById('sw-cd');
+    if (!el) return;
+    const [m, sec] = el.textContent.split(':').map(Number);
+    let t = m * 60 + sec - 1; if (t < 0) t = 3599;
+    el.textContent = String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0');
+  }, 1000);
+  const section = document.getElementById('beam');
+  let started = false;
+  new IntersectionObserver((entries, io) => {
+    if (!started && entries[0].isIntersecting) { started = true; run(); io.disconnect(); }
+  }, { threshold: 0.15 }).observe(stage.parentElement);
+})();
+
+</script>
+</section>
+
+
+
+
 
       <section id="features">
         <div class="wrap">
@@ -727,6 +1518,41 @@
                 A terminal app for macOS. It keeps every task in its own tab,
                 brings them all back after a restart, and marks the ones waiting
                 on input. It is free and currently in beta.
+              </p>
+            </details>
+
+            <details>
+              <summary>What is Beam?</summary>
+              <p class="ans">
+                Coming in 1.9.0. Beam streams one tab, live and view only, to a
+                link anyone can open in a browser: no install, no account.
+                Viewers enter a name, plus a short access code you share
+                separately, and appear in your watch list with a generated
+                avatar. Stop beaming and the link dies for everyone, forever.
+              </p>
+            </details>
+
+            <details>
+              <summary>Is Beam secure? Can the server read my terminal?</summary>
+              <p class="ans">
+                No. Beam is end to end encrypted. The key travels in the part
+                of the link after the #, which browsers never send to any
+                server, and the access code is mixed into the encryption keys.
+                The relay in the middle forwards ciphertext it cannot read, and
+                stores nothing. Before anything goes live the app also shows a
+                plain-words consent warning, because a terminal can print
+                secrets, and every beam stops itself after an hour unless you
+                lift the limit.
+              </p>
+            </details>
+
+            <details>
+              <summary>Can someone watching a beam type into my terminal?</summary>
+              <p class="ans">
+                No. The protocol simply has no message that carries input, so
+                watching is view only by construction, not by a setting.
+                Remote control may come later, as a separate explicit grant
+                you approve per person.
               </p>
             </details>
 

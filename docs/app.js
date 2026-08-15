@@ -505,7 +505,12 @@
       SCENES.forEach(function (_, d) {
         document.getElementById("dot" + d).classList.toggle("on", d === scn);
       });
-      capEl.innerHTML = SCENES[scn].caption;
+      // Crossfade the caption instead of snapping it: the visible seam between scenes.
+      capEl.style.opacity = "0";
+      setTimeout(function () {
+        capEl.innerHTML = SCENES[scn].caption;
+        capEl.style.opacity = "1";
+      }, 180);
       SCENES[scn].steps.forEach(function (step) {
         timers.push(setTimeout(step[1], reduced ? 0 : step[0]));
       });
