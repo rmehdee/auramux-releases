@@ -128,7 +128,7 @@
     </div>
     <div class="gerr" id="gateErr" hidden></div>
     <button class="go" id="go">Watch Stream</button>
-    <div class="fine">Your name and avatar are shown to the person sharing<br>and to other viewers. Nothing is stored.</div>
+    <div class="fine">Your name and avatar are shown to the person sharing<br>and to other viewers. Remembered only while this tab is open.</div>
   </div>
 </div>
 
@@ -258,6 +258,7 @@
   // still handles a dead room.
   const httpRelay = relayBase.replace(/^ws/, "http");
   function showOffline() {
+    try { sessionStorage.removeItem(SKEY); } catch {}
     showState("◼ STREAM OFFLINE",
               "This link is not live. Links expire when sharing stops,<br>so this one is gone for good. Ask for a fresh link.");
   }
@@ -295,15 +296,35 @@
   let retries = 0;
   const MAX_RETRIES = 40;     // × 4.5s ≈ 3 minutes of patience
 
+  // Refresh should not feel like arriving: name and code are remembered ONLY inside this tab,
+  // only while it stays open (sessionStorage). Nothing durable: a new tab, a closed tab, or a
+  // different browser starts at the gate again, and a wrong or ended share forgets immediately.
+  const SKEY = "aura.watch." + room;
+
   async function start() {
     myName = cleanName();
     if (!ready() || !linkKey) return;
+    try { sessionStorage.setItem(SKEY, JSON.stringify({ n: myName, c: codeRequired ? codeInput.value : null })); } catch {}
     await deriveKeys(codeRequired ? codeInput.value : null);
     goBtn.textContent = codeRequired ? "checking code…" : "connecting…";
     connect(true);
   }
 
+  // A refresh mid-watch: refill the gate from this tab's memory and walk through it automatically.
+  // The same validation path runs, so a stale or wrong remembered code still lands at the gate
+  // with the error rather than a broken stream.
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(SKEY) || "null");
+    if (saved && saved.n && roomOK && linkKey) {
+      nameInput.value = saved.n;
+      if (codeRequired && saved.c) codeInput.value = saved.c;
+      refresh();
+      if (ready()) start();
+    }
+  } catch {}
+
   function wrongCode() {
+    try { sessionStorage.removeItem(SKEY); } catch {}
     try { ws.close(1000); } catch {}
     validated = false;
     $("gate").hidden = false;
@@ -345,6 +366,7 @@
           renderRoster(Array.isArray(frame.viewers) ? frame.viewers : []);
         } else if (frame.type === "ended") {
           endedForGood = true;
+          try { sessionStorage.removeItem(SKEY); } catch {}
           showState("◼ SHARE ENDED",
                     "The person sharing stopped the stream.<br>This link is dead for everyone. Nothing was stored.");
           try { ws.close(1000); } catch {}
