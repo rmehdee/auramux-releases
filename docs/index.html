@@ -105,7 +105,7 @@
             "applicationCategory": "DeveloperApplication",
             "applicationSubCategory": "Terminal emulator",
             "operatingSystem": "macOS 14 (Sonoma) or later",
-            "softwareVersion": "1.8.1",
+            "softwareVersion": "1.8.2",
             "softwareRequirements": "macOS 14 (Sonoma) or later",
             "processorRequirements": "Apple Silicon or Intel, universal build",
             "downloadUrl": "https://github.com/rmehdee/auramux-releases/releases",
@@ -382,7 +382,7 @@
           />
           AuraMux
         </a>
-        <span class="pill" id="version-pill">v1.8.1 &middot; beta</span>
+        <span class="pill" id="version-pill">v1.8.2 &middot; beta</span>
         <span class="spacer"></span>
         <a class="quiet hide-xs" href="#features">Features</a>
         <a class="quiet hide-xs" href="#beam">Beam</a>
@@ -1349,11 +1349,32 @@
           <!-- whats-new:start -->
       <div class="rel-tabs" id="rel-tabs">
         <div class="rel-tablist" id="rel-tablist" aria-label="Releases" hidden>
+          <button class="rel-tab" type="button" data-rel="1-8-2">1.8.2</button>
           <button class="rel-tab" type="button" data-rel="1-8-1">1.8.1</button>
           <button class="rel-tab" type="button" data-rel="1-8-0">1.8.0</button>
           <button class="rel-tab" type="button" data-rel="1-7-3">1.7.3</button>
-          <button class="rel-tab" type="button" data-rel="1-7-2">1.7.2</button>
         </div>
+
+        <article class="rel" id="rel-1-8-2">
+          <h3 class="rel-v">1.8.2</h3>
+          <p class="rel-meta">
+            <time datetime="2026-08-17">17 August 2026</time>
+          </p>
+
+          <div class="rel-body">
+              <p>Two small fixes to how your git branch is shown.</p>
+              <p><strong>The branch no longer gets squeezed out of the sidebar.</strong> With a long folder path, the branch name could shrink away to nothing. It now keeps its place, the path gives up room first, and a long branch name shortens in the middle so you can still recognise it from both ends.</p>
+              <p><strong>The bottom bar now shows the branch too</strong>, next to the tab name, with a dot when you have uncommitted changes.</p>
+              <p>Update by pasting this into any terminal, including an AuraMux tab:</p>
+              <pre><code>curl -fsSL https://github.com/rmehdee/auramux-releases/releases/latest/download/install.sh | bash</code></pre>
+          </div>
+
+          <p class="rel-more">
+            <a href="https://github.com/rmehdee/auramux-releases/releases/tag/v1.8.2" target="_blank" rel="noopener"
+              >All of the 1.8.2 notes on GitHub &rarr;</a
+            >
+          </p>
+        </article>
 
         <article class="rel" id="rel-1-8-1">
           <h3 class="rel-v">1.8.1</h3>
@@ -1430,29 +1451,6 @@
           <p class="rel-more">
             <a href="https://github.com/rmehdee/auramux-releases/releases/tag/v1.7.3" target="_blank" rel="noopener"
               >All of the 1.7.3 notes on GitHub &rarr;</a
-            >
-          </p>
-        </article>
-
-        <article class="rel" id="rel-1-7-2">
-          <h3 class="rel-v">1.7.2</h3>
-          <p class="rel-meta">
-            <time datetime="2026-08-13">13 August 2026</time>
-          </p>
-
-          <div class="rel-body">
-              <h4>Bug fix</h4>
-              <p><strong>Remote View could freeze the app on the watching Mac.</strong> Opening a session with a long scrollback would connect, then hang, needing a force quit.</p>
-              <p>Nothing limited how much text was sent. The whole scrollback went across on the first watch, up to ten thousand lines, and the watching Mac kept appending every update into a single text view without any cap. On a busy session that was enough to lock the interface.</p>
-              <p>Watching now works on the last 1000 lines, refreshed once a second and only when something has actually changed. Your full history stays on the machine being watched. A long running session now costs the same to watch as one just started.</p>
-              <p>Output also renders line by line, so only what is on screen is laid out, and scrolling no longer fights you: it follows new output until you scroll up to read, with a Latest button to resume following. Use the copy button in the header to take the visible output.</p>
-              <p>Update by pasting this into any terminal, including an AuraMux tab:</p>
-              <pre><code>curl -fsSL https://github.com/rmehdee/auramux-releases/releases/latest/download/install.sh | bash</code></pre>
-          </div>
-
-          <p class="rel-more">
-            <a href="https://github.com/rmehdee/auramux-releases/releases/tag/v1.7.2" target="_blank" rel="noopener"
-              >All of the 1.7.2 notes on GitHub &rarr;</a
             >
           </p>
         </article>
